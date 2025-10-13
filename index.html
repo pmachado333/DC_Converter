@@ -34,7 +34,8 @@
     .tabs {
       display:flex; flex-wrap:wrap; gap:6px; row-gap:8px;
       padding:10px 16px; margin-top:28px;
-      border-bottom:1px solid var(--border); background:#0e1527; overflow:visible;
+      border-bottom:1px solid var(--border);
+      background:#0e1527; overflow:visible;
     }
     .tab { display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); background:var(--card); border-radius:10px; cursor:pointer; white-space:nowrap; font-size:12px }
     .tab.active { outline:2px solid var(--accent) }
@@ -152,12 +153,12 @@
           <table>
             <thead>
               <tr>
-                <th title="Time in days since start">Time (day)</th>
-                <th title="WBP9: 9-point well-block average pressure near the well">Well Block Pressure - 9P (kPa)</th>
-                <th title="WBHP: flowing bottom-hole pressure (reference depth)">Bottom-hole Pressure (kPa)</th>
-                <th title="WOPR: well oil production rate (surface conditions)">Oil Rate (m³/day)</th>
-                <th title="WGPR: well gas production rate (surface conditions)">Gas Rate (m³/day)</th>
-                <th title="WWPR: well water production rate (surface conditions)">Water Rate (m³/day)</th>
+                <th title="Time in days since start">Time</th>
+                <th title="WBP9: 9-point well-block average pressure near the well">Well Block Pressure - 9P</th>
+                <th title="WBHP: flowing bottom-hole pressure (reference depth)">Bottom-hole Pressure</th>
+                <th title="WOPR: well oil production rate (surface conditions)">Oil Rate</th>
+                <th title="WGPR: well gas production rate (surface conditions)">Gas Rate</th>
+                <th title="WWPR: well water production rate (surface conditions)">Water Rate</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -170,12 +171,12 @@
 <script>
 /** ---------- Constants / State ---------- */
 const WELL_COLS = [
-  "Time (day)",
-  "Well Block Pressure - 9P (kPa)",
-  "Bottom-hole Pressure (kPa)",
-  "Oil Rate (m³/day)",
-  "Gas Rate (m³/day)",
-  "Water Rate (m³/day)"
+  "Time",
+  "Well Block Pressure - 9P",
+  "Bottom-hole Pressure",
+  "Oil Rate",
+  "Gas Rate",
+  "Water Rate"
 ];
 const SERIES_META = {
   OIL_PRODUCTION_CUML: { description:"Oil production cumulative rate", displayUnit:"STB", measurementID:"Liquid_Production_Volume" },
@@ -496,7 +497,7 @@ function computeWellSeries(well){
   const dP = BP_psi.map((bp,i)=> (Number.isFinite(bp)&&Number.isFinite(BHP_psi[i])) ? (bp - BHP_psi[i]) : NaN);
   let PI = oil_stb.map((q,i)=>safeDiv(q, dP[i])); // STB/d/psi
 
-  // PI[0] rule (why: align with your requested extrapolation)
+  // PI[0] rule
   if (PI.length >= 3 && Number.isFinite(PI[1]) && Number.isFinite(PI[2])) {
     PI[0] = PI[1] + (PI[1] - PI[2]);
   } else if (PI.length >= 2 && Number.isFinite(PI[1])) {
