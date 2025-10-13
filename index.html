@@ -32,15 +32,9 @@
 
     /* TABS: wrap to multiple rows and sit further below header */
     .tabs {
-      display:flex;
-      flex-wrap:wrap;              /* allow multiple rows */
-      gap:6px;
-      row-gap:8px;                 /* vertical spacing between rows */
-      padding:10px 16px;
-      margin-top:28px;             /* <-- increased space below header */
-      border-bottom:1px solid var(--border);
-      background:#0e1527;
-      overflow:visible;            /* no horizontal scroll */
+      display:flex; flex-wrap:wrap; gap:6px; row-gap:8px;
+      padding:10px 16px; margin-top:28px;
+      border-bottom:1px solid var(--border); background:#0e1527; overflow:visible;
     }
     .tab { display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); background:var(--card); border-radius:10px; cursor:pointer; white-space:nowrap; font-size:12px }
     .tab.active { outline:2px solid var(--accent) }
@@ -50,20 +44,24 @@
     .wrap { padding:16px; display:flex; justify-content:center }
     .container { width:100%; max-width:920px; }
     .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
+
     .controls { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; font-size:12px }
     .right { display:flex; gap:8px; align-items:center; flex-wrap:wrap }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace }
+
+    .units { display:grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap:8px; margin:10px 0 6px }
+    .units label { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--muted) }
+    select, input[type="number"] {
+      background:#0b1220; color:#e5e7eb; border:1px solid var(--border);
+      border-radius:8px; padding:6px 8px; font-size:12px
+    }
+    input[type="number"] { width:72px }
 
     table { width:100%; border-collapse:collapse; table-layout:fixed }
     thead th { position:sticky; top:0; background:#0b1220; z-index:1 }
     th,td { border:1px solid #1f2937; padding:6px; text-align:left; vertical-align:top; font-size:12px; line-height:1.2 }
     td[contenteditable="true"] { outline:none }
     td:focus { box-shadow: inset 0 0 0 2px var(--accent) }
-
-    input[type="number"] {
-      background:#0b1220; color:#e5e7eb; border:1px solid var(--border);
-      border-radius:8px; padding:6px 8px; width:72px; font-size:12px
-    }
   </style>
 </head>
 <body>
@@ -83,6 +81,7 @@
   <div class="wrap">
     <div class="container">
       <div class="card">
+
         <div class="controls">
           <div class="mono">Active: <span id="activeWellName"></span></div>
           <div class="right">
@@ -92,6 +91,61 @@
             <button class="btn dark" id="clearDataBtn">Clear Data</button>
             <button class="btn danger" id="deleteWellBtn">Delete Well</button>
           </div>
+        </div>
+
+        <!-- Units selector -->
+        <div class="units">
+          <label title="Time in days since start">
+            Time Unit
+            <select id="u_time">
+              <option value="d">days</option>
+              <option value="h">hours</option>
+              <option value="mo30">months (30 d)</option>
+              <option value="y365">years (365 d)</option>
+            </select>
+          </label>
+          <label title="WBP9: 9-point well-block average pressure near the well">
+            Block P Unit
+            <select id="u_bp">
+              <option value="kpa">kPa</option>
+              <option value="bar">bar</option>
+              <option value="mpa">MPa</option>
+              <option value="psi">psi</option>
+            </select>
+          </label>
+          <label title="WBHP: flowing bottom-hole pressure (reference depth)">
+            BHP Unit
+            <select id="u_bhp">
+              <option value="kpa">kPa</option>
+              <option value="bar">bar</option>
+              <option value="mpa">MPa</option>
+              <option value="psi">psi</option>
+            </select>
+          </label>
+          <label title="WOPR: oil production rate at surface conditions">
+            Oil Rate Unit
+            <select id="u_oil">
+              <option value="m3d">m³/day</option>
+              <option value="stbd">STB/day</option>
+              <option value="m3h">m³/hour</option>
+            </select>
+          </label>
+          <label title="WGPR: gas production rate at surface conditions">
+            Gas Rate Unit
+            <select id="u_gas">
+              <option value="m3d">m³/day</option>
+              <option value="mscf">MSCF/day</option>
+              <option value="mmscf">MMSCF/day</option>
+            </select>
+          </label>
+          <label title="WWPR: water production rate at surface conditions">
+            Water Rate Unit
+            <select id="u_wat">
+              <option value="m3d">m³/day</option>
+              <option value="stbd">STB/day</option>
+              <option value="m3h">m³/hour</option>
+            </select>
+          </label>
         </div>
 
         <div style="overflow:auto;">
@@ -125,16 +179,19 @@ const WELL_COLS = [
 ];
 const SERIES_META = {
   OIL_PRODUCTION_CUML: { description:"Oil production cumulative rate", displayUnit:"STB", measurementID:"Liquid_Production_Volume" },
-  GAS_OIL_RATIO: { description:"Gas Oil Ratio", displayUnit:"MSFC/STB", measurementID:"Gas_To_Liquid_Ratio" },
+  GAS_OIL_RATIO: { description:"Gas Oil Ratio", displayUnit:"MSCF/STB", measurementID:"Gas_To_Liquid_Ratio" },
   WATER_CUT: { description:"Water Cut", displayUnit:"STB/STB", measurementID:"Liquid_To_Liquid_Ratio" }, // fraction
   INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR intercept", displayUnit:"STB/d", measurementID:"Liquid_Flowrate" },
   SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR scaling factor", displayUnit:"STB/d", measurementID:"Liquid_Productivity_Index" }
 };
 const M3_TO_STB = 6.28981077;
+const STB_TO_M3 = 1 / M3_TO_STB; // 0.1589872949
 const M3_TO_MMSCF = 0.0000353146667;
-const KPA_TO_PSI = 0.1450377377;
+const PSI_TO_KPA = 6.894757293168;
+const BAR_TO_KPA = 100.0;
+const MPA_TO_KPA = 1000.0;
 
-let wells = []; // {id, name, tableData: string[][]}
+let wells = []; // {id, name, tableData: string[][], units:{time,bp,bhp,oil,gas,wat}}
 let activeWellId = null;
 
 /** ---------- DOM ---------- */
@@ -148,6 +205,13 @@ const clearDataBtn = document.getElementById('clearDataBtn');
 const duplicateBtn = document.getElementById('duplicateBtn');
 const copyCountInput = document.getElementById('copyCount');
 const activeWellNameEl = document.getElementById('activeWellName');
+
+const u_time = document.getElementById('u_time');
+const u_bp = document.getElementById('u_bp');
+const u_bhp = document.getElementById('u_bhp');
+const u_oil = document.getElementById('u_oil');
+const u_gas = document.getElementById('u_gas');
+const u_wat = document.getElementById('u_wat');
 
 /** ---------- Utils ---------- */
 const uuid = () => Math.random().toString(36).slice(2,9);
@@ -185,36 +249,83 @@ function nextAvailableWellName() {
   return `P${n}`;
 }
 
+/** ---------- Units helpers (to canonical) ---------- */
+// Canonical: time=days, pressure=kPa, oil/gas/water=m³/day
+function factorTimeToDays(code){
+  switch(code){
+    case 'd': return 1;
+    case 'h': return 1/24;
+    case 'mo30': return 30;
+    case 'y365': return 365;
+    default: return 1;
+  }
+}
+function factorPressureToKPa(code){
+  switch(code){
+    case 'kpa': return 1;
+    case 'bar': return BAR_TO_KPA;
+    case 'mpa': return MPA_TO_KPA;
+    case 'psi': return PSI_TO_KPA;
+    default: return 1;
+  }
+}
+function factorOilWaterToM3d(code){
+  switch(code){
+    case 'm3d': return 1;
+    case 'stbd': return STB_TO_M3;    // STB/d → m3/d
+    case 'm3h': return 24;            // m3/h → m3/d
+    default: return 1;
+  }
+}
+function factorGasToM3d(code){
+  switch(code){
+    case 'm3d': return 1;
+    case 'mscf': return 28.316846592;     // MSCF/d → m3/d
+    case 'mmscf': return 28316.846592;    // MMSCF/d → m3/d
+    default: return 1;
+  }
+}
+function applyFactorArray(arr, factor){
+  return arr.map(v => Number.isFinite(v) ? v*factor : NaN);
+}
+
 /** ---------- Tabs & Wells ---------- */
-function addWell(initialName) {
-  const id = uuid();
-  const name = initialName ?? `P${wells.length+1}`;
-  wells.push({
-    id, name,
+function defaultUnits(){
+  return { time:'d', bp:'kpa', bhp:'kpa', oil:'m3d', gas:'m3d', wat:'m3d' };
+}
+function createWell(name){
+  return {
+    id: uuid(),
+    name,
+    units: defaultUnits(),
     tableData: Array.from({length: 30}, () => Array(WELL_COLS.length).fill(''))
-  });
-  setActiveWell(id);
-  renderTabs(); renderTable();
+  };
+}
+function addWell(initialName) {
+  const name = initialName ?? `P${wells.length+1}`;
+  const well = createWell(name);
+  wells.push(well);
+  setActiveWell(well.id);
+  renderTabs(); renderTable(); renderUnits();
 }
 function deleteWell(id) {
   wells = wells.filter(w=>w.id!==id);
   if (!wells.length) addWell('P1');
   setActiveWell(wells[0].id);
-  renderTabs(); renderTable();
+  renderTabs(); renderTable(); renderUnits();
 }
 function deleteWellWithMaybeConfirm(id) {
   const w = wells.find(x=>x.id===id);
   if (!w) return;
   if (isWellEmpty(w)) {
-    deleteWell(id); // silent if empty
+    deleteWell(id);
   } else {
     if (confirm(`Delete well "${w.name}"?`)) deleteWell(id);
   }
 }
 function resetAllWells() {
   wells = [];
-  addWell('P1'); // fresh start
-  renderTabs(); renderTable();
+  addWell('P1');
 }
 function setActiveWell(id) {
   activeWellId = id;
@@ -231,7 +342,7 @@ function renderTabs() {
   wells.forEach(w=>{
     const tab=document.createElement('div');
     tab.className='tab'+(w.id===activeWellId?' active':'');
-    tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); };
+    tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); };
     const input=document.createElement('input');
     input.value=w.name;
     input.oninput=e=>renameWell(w.id,e.target.value);
@@ -288,6 +399,30 @@ function onCellPaste(e){
   }
 }
 
+/** ---------- Units UI ---------- */
+function renderUnits(){
+  const w = wells.find(x=>x.id===activeWellId); if (!w) return;
+  u_time.value = w.units.time;
+  u_bp.value = w.units.bp;
+  u_bhp.value = w.units.bhp;
+  u_oil.value = w.units.oil;
+  u_gas.value = w.units.gas;
+  u_wat.value = w.units.wat;
+}
+[u_time,u_bp,u_bhp,u_oil,u_gas,u_wat].forEach(sel=>{
+  sel.addEventListener('change', ()=>{
+    const w = wells.find(x=>x.id===activeWellId); if (!w) return;
+    w.units = {
+      time: u_time.value,
+      bp:   u_bp.value,
+      bhp:  u_bhp.value,
+      oil:  u_oil.value,
+      gas:  u_gas.value,
+      wat:  u_wat.value
+    };
+  });
+});
+
 /** ---------- Math ---------- */
 function safeDiv(a,b){ return (Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(b)>0)?(a/b):NaN; }
 function cumsum(arr){ const out=[]; let s=0; for (const v of arr){ const x=Number.isFinite(v)?v:0; s+=x; out.push(s) } return out; }
@@ -306,32 +441,44 @@ function linearFit(x,y){
 
 function computeWellSeries(well){
   const data = well.tableData;
-  const DAYS = data.map(r=>toNumber(r[0]));
-  const BP_kPa = data.map(r=>toNumber(r[1]));
-  const BHP_kPa = data.map(r=>toNumber(r[2]));
-  const OIL_m3d = data.map(r=>toNumber(r[3]));
-  const GAS_m3d = data.map(r=>toNumber(r[4]));
-  const WATER_m3d = data.map(r=>toNumber(r[5]));
+  const DAYS_raw = data.map(r=>toNumber(r[0]));
+  const BP_raw   = data.map(r=>toNumber(r[1]));
+  const BHP_raw  = data.map(r=>toNumber(r[2]));
+  const OIL_raw  = data.map(r=>toNumber(r[3]));
+  const GAS_raw  = data.map(r=>toNumber(r[4]));
+  const WAT_raw  = data.map(r=>toNumber(r[5]));
 
   // trim trailing empties
-  let L = DAYS.length;
+  let L = DAYS_raw.length;
   for (; L>0; L--){
     const i=L-1;
-    if ([DAYS[i],BP_kPa[i],BHP_kPa[i],OIL_m3d[i],GAS_m3d[i],WATER_m3d[i]].some(v=>Number.isFinite(v))) break;
+    if ([DAYS_raw[i],BP_raw[i],BHP_raw[i],OIL_raw[i],GAS_raw[i],WAT_raw[i]].some(v=>Number.isFinite(v))) break;
   }
   if (L===0) return null;
 
-  const Days = DAYS.slice(0,L), BP=BP_kPa.slice(0,L), BHP=BHP_kPa.slice(0,L);
-  const Oil=OIL_m3d.slice(0,L), Gas=GAS_m3d.slice(0,L), Wat=WATER_m3d.slice(0,L);
+  // Units → canonical
+  const fTime = factorTimeToDays(well.units.time);
+  const fBP = factorPressureToKPa(well.units.bp);
+  const fBHP = factorPressureToKPa(well.units.bhp);
+  const fOil = factorOilWaterToM3d(well.units.oil);
+  const fGas = factorGasToM3d(well.units.gas);
+  const fWat = factorOilWaterToM3d(well.units.wat);
 
-  // unit conversions
-  const oil_stb = Oil.map(v=>Number.isFinite(v)? v*M3_TO_STB : NaN);
-  const wat_stb = Wat.map(v=>Number.isFinite(v)? v*M3_TO_STB : NaN);
-  const gas_mmscf = Gas.map(v=>Number.isFinite(v)? v*M3_TO_MMSCF : NaN);
-  const BP_psi = BP.map(v=>Number.isFinite(v)? v*KPA_TO_PSI : NaN);
-  const BHP_psi = BHP.map(v=>Number.isFinite(v)? v*KPA_TO_PSI : NaN);
+  const Days = applyFactorArray(DAYS_raw.slice(0,L), fTime);
+  const BP_kPa = applyFactorArray(BP_raw.slice(0,L), fBP);
+  const BHP_kPa = applyFactorArray(BHP_raw.slice(0,L), fBHP);
+  const OIL_m3d = applyFactorArray(OIL_raw.slice(0,L), fOil);
+  const GAS_m3d = applyFactorArray(GAS_raw.slice(0,L), fGas);
+  const WAT_m3d = applyFactorArray(WAT_raw.slice(0,L), fWat);
 
-  // GOR and WATER CUT as fraction
+  // unit conversions for calculations/exports
+  const oil_stb = OIL_m3d.map(v=>Number.isFinite(v)? v*M3_TO_STB : NaN);
+  const wat_stb = WAT_m3d.map(v=>Number.isFinite(v)? v*M3_TO_STB : NaN);
+  const gas_mmscf = GAS_m3d.map(v=>Number.isFinite(v)? v*M3_TO_MMSCF : NaN);
+  const BP_psi = BP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);   // kPa → psi
+  const BHP_psi = BHP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);
+
+  // GOR & Water Cut (fraction)
   const GOR = oil_stb.map((o,i)=>safeDiv(gas_mmscf[i], o));
   const WATER_FRAC = oil_stb.map((o,i)=>{
     const w = wat_stb[i];
@@ -339,24 +486,24 @@ function computeWellSeries(well){
     return denom > 0 ? safeDiv(w, denom) : NaN;
   });
 
-  // Δdays + cumulative
+  // Δdays + cumulative oil
   const dDays = Days.map(v=>Number.isFinite(v)?v:0);
   for (let i=dDays.length-1;i>=1;i--) dDays[i] = (Number.isFinite(Days[i])?Days[i]:0) - (Number.isFinite(Days[i-1])?Days[i-1]:0);
   const oilVolPerDate = oil_stb.map((q,i)=>(Number.isFinite(q)?q:0) * (Number.isFinite(dDays[i])?dDays[i]:0));
   const CumOil = cumsum(oilVolPerDate);
 
-  // PI from data
+  // PI
   const dP = BP_psi.map((bp,i)=> (Number.isFinite(bp)&&Number.isFinite(BHP_psi[i])) ? (bp - BHP_psi[i]) : NaN);
   let PI = oil_stb.map((q,i)=>safeDiv(q, dP[i])); // STB/d/psi
 
-  // PI[0] rule
+  // PI[0] rule (why: align with your requested extrapolation)
   if (PI.length >= 3 && Number.isFinite(PI[1]) && Number.isFinite(PI[2])) {
     PI[0] = PI[1] + (PI[1] - PI[2]);
   } else if (PI.length >= 2 && Number.isFinite(PI[1])) {
     PI[0] = PI[1];
   }
 
-  // Potential & linear fit
+  // Potential & linear fit → intercept series
   const Potential = PI.map((pi,i)=> Number.isFinite(pi)&&Number.isFinite(BP_psi[i]) ? pi*BP_psi[i] : NaN);
   const {m,b} = linearFit(PI, Potential);
   let INTERCEPT = PI.map(pi=>Number.isFinite(pi)? (m*pi + b) : NaN);
@@ -366,7 +513,7 @@ function computeWellSeries(well){
   if (WATER_FRAC.length>=2 && Number.isFinite(WATER_FRAC[1])) WATER_FRAC[0]=WATER_FRAC[1];
   if (INTERCEPT.length>=2) INTERCEPT[0] = INTERCEPT[1];
 
-  // sanitize → numbers
+  // sanitize
   const sanitize = a => a.map(v=>Number.isFinite(v)?v:0);
   let OIL_PRODUCTION_CUML = sanitize(CumOil);
   let GAS_OIL_RATIO = sanitize(GOR);
@@ -430,10 +577,11 @@ function duplicateActiveWell(copies) {
   for (let i=0;i<count;i++) {
     const name = nextAvailableWellName();
     const id = uuid();
-    const tableCopy = src.tableData.map(row => row.slice()); // deep copy rows
-    wells.push({ id, name, tableData: tableCopy });
+    const tableCopy = src.tableData.map(row => row.slice()); // deep copy
+    const unitsCopy = { ...src.units };
+    wells.push({ id, name, tableData: tableCopy, units: unitsCopy });
   }
-  renderTabs(); // keep current active well unchanged
+  renderTabs();
 }
 
 /** ---------- Actions ---------- */
