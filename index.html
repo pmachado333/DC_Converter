@@ -1,0 +1,451 @@
+<!-- /index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IXFM Decline Curve Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --brand:#22c55e; --accent:#3b82f6; --danger:#ef4444; --border:#1f2937; --slb:#003366; }
+    * { box-sizing:border-box }
+    body { margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; background:var(--bg); color:var(--text) }
+
+    /* SLB-blue header */
+    header {
+      padding:14px 16px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0;
+      background: linear-gradient(180deg, var(--slb) 0%, #012a52 100%);
+      color:#fff; z-index:2;
+    }
+    .brandwrap { display:flex; flex-direction:column; margin-right:8px }
+    .title { font-size:18px; font-weight:700; line-height:1.1 }
+    .subtitle { font-size:12px; opacity:.9 }
+
+    .btn { padding:8px 12px; border:1px solid rgba(255,255,255,.2); border-radius:10px; background:rgba(255,255,255,.06); color:#fff; cursor:pointer; font-weight:600; font-size:12px }
+    .btn:hover { background:rgba(255,255,255,.1) }
+    .btn.brand { background:#16a34a; border-color:#0e7a34; color:#052e16 }
+    .btn.danger { background:var(--danger); border-color:#991b1b; color:#fff }
+    .btn.dark { background:#0b1220; border-color:#2a364d; color:#e5e7eb }
+    .hint { color:#e5e7eb; opacity:.85; font-size:11px }
+
+    /* TABS: wrap to multiple rows and sit further below header */
+    .tabs {
+      display:flex;
+      flex-wrap:wrap;              /* allow multiple rows */
+      gap:6px;
+      row-gap:8px;                 /* vertical spacing between rows */
+      padding:10px 16px;
+      margin-top:28px;             /* <-- increased space below header */
+      border-bottom:1px solid var(--border);
+      background:#0e1527;
+      overflow:visible;            /* no horizontal scroll */
+    }
+    .tab { display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); background:var(--card); border-radius:10px; cursor:pointer; white-space:nowrap; font-size:12px }
+    .tab.active { outline:2px solid var(--accent) }
+    .tab input { background:transparent; color:#e5e7eb; border:none; width:120px; font-weight:600; font-size:12px }
+    .tab .x { font-weight:800; color:#94a3b8; cursor:pointer }
+
+    .wrap { padding:16px; display:flex; justify-content:center }
+    .container { width:100%; max-width:920px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
+    .controls { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; font-size:12px }
+    .right { display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace }
+
+    table { width:100%; border-collapse:collapse; table-layout:fixed }
+    thead th { position:sticky; top:0; background:#0b1220; z-index:1 }
+    th,td { border:1px solid #1f2937; padding:6px; text-align:left; vertical-align:top; font-size:12px; line-height:1.2 }
+    td[contenteditable="true"] { outline:none }
+    td:focus { box-shadow: inset 0 0 0 2px var(--accent) }
+
+    input[type="number"] {
+      background:#0b1220; color:#e5e7eb; border:1px solid var(--border);
+      border-radius:8px; padding:6px 8px; width:72px; font-size:12px
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brandwrap">
+      <div class="title">IXFM Decline Curve Generator</div>
+      <div class="subtitle">By Patrick Machado</div>
+    </div>
+    <button class="btn dark" id="addWellBtn">+ Add Well</button>
+    <button class="btn brand" id="downloadBtn">Download JSON</button>
+    <button class="btn danger" id="deleteAllBtn">Delete All Wells</button>
+    <span class="hint">Tip: paste from Excel; rows auto-expand.</span>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="wrap">
+    <div class="container">
+      <div class="card">
+        <div class="controls">
+          <div class="mono">Active: <span id="activeWellName"></span></div>
+          <div class="right">
+            <label class="hint">Copies</label>
+            <input id="copyCount" type="number" min="1" step="1" value="1" />
+            <button class="btn dark" id="duplicateBtn">Duplicate</button>
+            <button class="btn dark" id="clearDataBtn">Clear Data</button>
+            <button class="btn danger" id="deleteWellBtn">Delete Well</button>
+          </div>
+        </div>
+
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th title="Time in days since start">Time (day)</th>
+                <th title="WBP9: 9-point well-block average pressure near the well">Well Block Pressure - 9P (kPa)</th>
+                <th title="WBHP: flowing bottom-hole pressure (reference depth)">Bottom-hole Pressure (kPa)</th>
+                <th title="WOPR: well oil production rate (surface conditions)">Oil Rate (m³/day)</th>
+                <th title="WGPR: well gas production rate (surface conditions)">Gas Rate (m³/day)</th>
+                <th title="WWPR: well water production rate (surface conditions)">Water Rate (m³/day)</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/** ---------- Constants / State ---------- */
+const WELL_COLS = [
+  "Time (day)",
+  "Well Block Pressure - 9P (kPa)",
+  "Bottom-hole Pressure (kPa)",
+  "Oil Rate (m³/day)",
+  "Gas Rate (m³/day)",
+  "Water Rate (m³/day)"
+];
+const SERIES_META = {
+  OIL_PRODUCTION_CUML: { description:"Oil production cumulative rate", displayUnit:"STB", measurementID:"Liquid_Production_Volume" },
+  GAS_OIL_RATIO: { description:"Gas Oil Ratio", displayUnit:"MSFC/STB", measurementID:"Gas_To_Liquid_Ratio" },
+  WATER_CUT: { description:"Water Cut", displayUnit:"STB/STB", measurementID:"Liquid_To_Liquid_Ratio" }, // fraction
+  INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR intercept", displayUnit:"STB/d", measurementID:"Liquid_Flowrate" },
+  SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR scaling factor", displayUnit:"STB/d", measurementID:"Liquid_Productivity_Index" }
+};
+const M3_TO_STB = 6.28981077;
+const M3_TO_MMSCF = 0.0000353146667;
+const KPA_TO_PSI = 0.1450377377;
+
+let wells = []; // {id, name, tableData: string[][]}
+let activeWellId = null;
+
+/** ---------- DOM ---------- */
+const tabsEl = document.getElementById('tabs');
+const bodyEl = document.getElementById('tableBody');
+const addWellBtn = document.getElementById('addWellBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const deleteAllBtn = document.getElementById('deleteAllBtn');
+const deleteWellBtn = document.getElementById('deleteWellBtn');
+const clearDataBtn = document.getElementById('clearDataBtn');
+const duplicateBtn = document.getElementById('duplicateBtn');
+const copyCountInput = document.getElementById('copyCount');
+const activeWellNameEl = document.getElementById('activeWellName');
+
+/** ---------- Utils ---------- */
+const uuid = () => Math.random().toString(36).slice(2,9);
+const toNumber = v => {
+  if (typeof v === 'number') return v;
+  if (v == null) return NaN;
+  const s = String(v).trim().replace(/,/g,'');
+  if (s === '') return NaN;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+};
+const isMostlyNonNumericRow = row => row.map(toNumber).filter(Number.isFinite).length <= 2;
+
+function ensureRows(well, rowsNeeded) {
+  const add = Math.max(0, rowsNeeded - well.tableData.length);
+  for (let i=0;i<add;i++) well.tableData.push(Array(WELL_COLS.length).fill(''));
+  return add;
+}
+function isWellEmpty(well) {
+  for (const row of well.tableData) {
+    for (const cell of row) {
+      if (String(cell ?? '').trim() !== '') return false;
+    }
+  }
+  return true;
+}
+function nextAvailableWellName() {
+  const used = new Set();
+  for (const w of wells) {
+    const m = /^P(\d+)$/.exec(w.name.trim());
+    if (m) used.add(Number(m[1]));
+  }
+  let n = 1;
+  while (used.has(n)) n++;
+  return `P${n}`;
+}
+
+/** ---------- Tabs & Wells ---------- */
+function addWell(initialName) {
+  const id = uuid();
+  const name = initialName ?? `P${wells.length+1}`;
+  wells.push({
+    id, name,
+    tableData: Array.from({length: 30}, () => Array(WELL_COLS.length).fill(''))
+  });
+  setActiveWell(id);
+  renderTabs(); renderTable();
+}
+function deleteWell(id) {
+  wells = wells.filter(w=>w.id!==id);
+  if (!wells.length) addWell('P1');
+  setActiveWell(wells[0].id);
+  renderTabs(); renderTable();
+}
+function deleteWellWithMaybeConfirm(id) {
+  const w = wells.find(x=>x.id===id);
+  if (!w) return;
+  if (isWellEmpty(w)) {
+    deleteWell(id); // silent if empty
+  } else {
+    if (confirm(`Delete well "${w.name}"?`)) deleteWell(id);
+  }
+}
+function resetAllWells() {
+  wells = [];
+  addWell('P1'); // fresh start
+  renderTabs(); renderTable();
+}
+function setActiveWell(id) {
+  activeWellId = id;
+  activeWellNameEl.textContent = wells.find(w=>w.id===id)?.name ?? '';
+}
+function renameWell(id,newName) {
+  const w = wells.find(x=>x.id===id);
+  if (!w) return;
+  w.name = newName.trim() || w.name;
+  if (id===activeWellId) activeWellNameEl.textContent = w.name;
+}
+function renderTabs() {
+  tabsEl.innerHTML = '';
+  wells.forEach(w=>{
+    const tab=document.createElement('div');
+    tab.className='tab'+(w.id===activeWellId?' active':'');
+    tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); };
+    const input=document.createElement('input');
+    input.value=w.name;
+    input.oninput=e=>renameWell(w.id,e.target.value);
+    const close=document.createElement('span');
+    close.className='x'; close.textContent='×';
+    close.onclick=(ev)=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); };
+    tab.appendChild(input); tab.appendChild(close); tabsEl.appendChild(tab);
+  });
+}
+
+/** ---------- Table ---------- */
+function renderTable() {
+  const w = wells.find(x=>x.id===activeWellId); if (!w) return;
+  bodyEl.innerHTML='';
+  w.tableData.forEach((row,r)=>{
+    const tr=document.createElement('tr');
+    for (let c=0;c<WELL_COLS.length;c++){
+      const td=document.createElement('td');
+      td.contentEditable='true'; td.spellcheck=false;
+      td.dataset.row=r; td.dataset.col=c;
+      td.textContent=row[c] ?? '';
+      td.addEventListener('input', onCellInput);
+      td.addEventListener('paste', onCellPaste);
+      tr.appendChild(td);
+    }
+    bodyEl.appendChild(tr);
+  });
+}
+function onCellInput(e){
+  const td=e.currentTarget;
+  const r=+td.dataset.row, c=+td.dataset.col;
+  const w=wells.find(x=>x.id===activeWellId);
+  w.tableData[r][c]=td.textContent;
+}
+function onCellPaste(e){
+  e.preventDefault();
+  const td=e.currentTarget;
+  const startR=+td.dataset.row, startC=+td.dataset.col;
+  const raw=(e.clipboardData||window.clipboardData).getData('text');
+  const lines=raw.replace(/\r/g,'').split('\n').filter(Boolean).map(l=>l.split('\t'));
+  if (!lines.length) return;
+  const payload=isMostlyNonNumericRow(lines[0])?lines.slice(1):lines;
+  const w=wells.find(x=>x.id===activeWellId);
+  const added=ensureRows(w, startR+payload.length);
+  if (added>0) renderTable();
+  for (let i=0;i<payload.length;i++){
+    const cols=payload[i];
+    for (let j=0;j<cols.length && (startC+j)<WELL_COLS.length;j++){
+      const r=startR+i, c=startC+j;
+      w.tableData[r][c]=cols[j];
+      const cell=bodyEl.querySelector(`td[data-row="${r}"][data-col="${c}"]`);
+      if (cell) cell.textContent=cols[j];
+    }
+  }
+}
+
+/** ---------- Math ---------- */
+function safeDiv(a,b){ return (Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(b)>0)?(a/b):NaN; }
+function cumsum(arr){ const out=[]; let s=0; for (const v of arr){ const x=Number.isFinite(v)?v:0; s+=x; out.push(s) } return out; }
+function linearFit(x,y){
+  const xs=[], ys=[];
+  for (let i=0;i<x.length;i++) if (Number.isFinite(x[i]) && Number.isFinite(y[i])) { xs.push(x[i]); ys.push(y[i]); }
+  if (xs.length<2) return {m:0,b:0};
+  const n=xs.length, mean=a=>a.reduce((p,c)=>p+c,0)/a.length;
+  const mx=mean(xs), my=mean(ys);
+  let num=0, den=0;
+  for (let i=0;i<n;i++){ const dx=xs[i]-mx; num += dx*(ys[i]-my); den += dx*dx; }
+  const m = den===0 ? 0 : num/den;
+  const b = my - m*mx;
+  return {m,b};
+}
+
+function computeWellSeries(well){
+  const data = well.tableData;
+  const DAYS = data.map(r=>toNumber(r[0]));
+  const BP_kPa = data.map(r=>toNumber(r[1]));
+  const BHP_kPa = data.map(r=>toNumber(r[2]));
+  const OIL_m3d = data.map(r=>toNumber(r[3]));
+  const GAS_m3d = data.map(r=>toNumber(r[4]));
+  const WATER_m3d = data.map(r=>toNumber(r[5]));
+
+  // trim trailing empties
+  let L = DAYS.length;
+  for (; L>0; L--){
+    const i=L-1;
+    if ([DAYS[i],BP_kPa[i],BHP_kPa[i],OIL_m3d[i],GAS_m3d[i],WATER_m3d[i]].some(v=>Number.isFinite(v))) break;
+  }
+  if (L===0) return null;
+
+  const Days = DAYS.slice(0,L), BP=BP_kPa.slice(0,L), BHP=BHP_kPa.slice(0,L);
+  const Oil=OIL_m3d.slice(0,L), Gas=GAS_m3d.slice(0,L), Wat=WATER_m3d.slice(0,L);
+
+  // unit conversions
+  const oil_stb = Oil.map(v=>Number.isFinite(v)? v*M3_TO_STB : NaN);
+  const wat_stb = Wat.map(v=>Number.isFinite(v)? v*M3_TO_STB : NaN);
+  const gas_mmscf = Gas.map(v=>Number.isFinite(v)? v*M3_TO_MMSCF : NaN);
+  const BP_psi = BP.map(v=>Number.isFinite(v)? v*KPA_TO_PSI : NaN);
+  const BHP_psi = BHP.map(v=>Number.isFinite(v)? v*KPA_TO_PSI : NaN);
+
+  // GOR and WATER CUT as fraction
+  const GOR = oil_stb.map((o,i)=>safeDiv(gas_mmscf[i], o));
+  const WATER_FRAC = oil_stb.map((o,i)=>{
+    const w = wat_stb[i];
+    const denom = (Number.isFinite(o)?o:0) + (Number.isFinite(w)?w:0);
+    return denom > 0 ? safeDiv(w, denom) : NaN;
+  });
+
+  // Δdays + cumulative
+  const dDays = Days.map(v=>Number.isFinite(v)?v:0);
+  for (let i=dDays.length-1;i>=1;i--) dDays[i] = (Number.isFinite(Days[i])?Days[i]:0) - (Number.isFinite(Days[i-1])?Days[i-1]:0);
+  const oilVolPerDate = oil_stb.map((q,i)=>(Number.isFinite(q)?q:0) * (Number.isFinite(dDays[i])?dDays[i]:0));
+  const CumOil = cumsum(oilVolPerDate);
+
+  // PI from data
+  const dP = BP_psi.map((bp,i)=> (Number.isFinite(bp)&&Number.isFinite(BHP_psi[i])) ? (bp - BHP_psi[i]) : NaN);
+  let PI = oil_stb.map((q,i)=>safeDiv(q, dP[i])); // STB/d/psi
+
+  // PI[0] rule
+  if (PI.length >= 3 && Number.isFinite(PI[1]) && Number.isFinite(PI[2])) {
+    PI[0] = PI[1] + (PI[1] - PI[2]);
+  } else if (PI.length >= 2 && Number.isFinite(PI[1])) {
+    PI[0] = PI[1];
+  }
+
+  // Potential & linear fit
+  const Potential = PI.map((pi,i)=> Number.isFinite(pi)&&Number.isFinite(BP_psi[i]) ? pi*BP_psi[i] : NaN);
+  const {m,b} = linearFit(PI, Potential);
+  let INTERCEPT = PI.map(pi=>Number.isFinite(pi)? (m*pi + b) : NaN);
+
+  // First-row fixes
+  if (GOR.length>=2 && Number.isFinite(GOR[1])) GOR[0]=GOR[1];
+  if (WATER_FRAC.length>=2 && Number.isFinite(WATER_FRAC[1])) WATER_FRAC[0]=WATER_FRAC[1];
+  if (INTERCEPT.length>=2) INTERCEPT[0] = INTERCEPT[1];
+
+  // sanitize → numbers
+  const sanitize = a => a.map(v=>Number.isFinite(v)?v:0);
+  let OIL_PRODUCTION_CUML = sanitize(CumOil);
+  let GAS_OIL_RATIO = sanitize(GOR);
+  let WATER_CUT = sanitize(WATER_FRAC);
+  let SCALING_FACTOR = sanitize(PI);
+  let INTERCEPT_CORR = sanitize(INTERCEPT);
+
+  // Append extra final step: keep cumulative, zero the rest
+  const last = OIL_PRODUCTION_CUML.length-1;
+  OIL_PRODUCTION_CUML = OIL_PRODUCTION_CUML.concat([ OIL_PRODUCTION_CUML[last] ]);
+  GAS_OIL_RATIO = GAS_OIL_RATIO.concat([0]);
+  WATER_CUT = WATER_CUT.concat([0]);
+  SCALING_FACTOR = SCALING_FACTOR.concat([0]);
+  INTERCEPT_CORR = INTERCEPT_CORR.concat([0]);
+
+  return {
+    name: well.name.replace(/\./g,''),
+    length: OIL_PRODUCTION_CUML.length,
+    OIL_PRODUCTION_CUML,
+    GAS_OIL_RATIO,
+    WATER_CUT,
+    INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: INTERCEPT_CORR,
+    SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: SCALING_FACTOR
+  };
+}
+
+/** ---------- Export ---------- */
+function buildJson(){
+  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1" };
+  for (const w of wells){
+    const c = computeWellSeries(w);
+    if (!c) continue;
+    payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
+    const order = ["OIL_PRODUCTION_CUML","GAS_OIL_RATIO","WATER_CUT","INTERCEPT_OIL_PHASE_IPR_REF_DEPTH","SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH"];
+    for (const key of order){
+      payload.series.push({
+        description: SERIES_META[key].description,
+        displayUnit: SERIES_META[key].displayUnit,
+        entityName: c.name,
+        entityType: "WELL",
+        measurementID: SERIES_META[key].measurementID,
+        name: key,
+        values: c[key]
+      });
+    }
+  }
+  return payload;
+}
+function download(filename, obj){
+  const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/** ---------- Duplicate ---------- */
+function duplicateActiveWell(copies) {
+  const src = wells.find(x=>x.id===activeWellId);
+  if (!src) return;
+  const count = Math.max(1, Math.floor(copies || 1));
+  for (let i=0;i<count;i++) {
+    const name = nextAvailableWellName();
+    const id = uuid();
+    const tableCopy = src.tableData.map(row => row.slice()); // deep copy rows
+    wells.push({ id, name, tableData: tableCopy });
+  }
+  renderTabs(); // keep current active well unchanged
+}
+
+/** ---------- Actions ---------- */
+addWellBtn.onclick = () => addWell();
+downloadBtn.onclick = () => download('ipr_decline_curves.json', buildJson());
+deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
+deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?")) resetAllWells(); };
+clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); };
+duplicateBtn.onclick = () => { const n = Number(copyCountInput.value); duplicateActiveWell(Number.isFinite(n) ? n : 1); };
+
+/** ---------- Boot ---------- */
+addWell('P1');
+</script>
+</body>
+</html>
