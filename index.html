@@ -524,9 +524,11 @@ function computeWellSeries(well){
 
   // Append extra final step: keep cumulative, zero the rest
   const last = OIL_PRODUCTION_CUML.length-1;
-  OIL_PRODUCTION_CUML = OIL_PRODUCTION_CUML.concat([ OIL_PRODUCTION_CUML[last] ]);
-  GAS_OIL_RATIO = GAS_OIL_RATIO.concat([0]);
-  WATER_CUT = WATER_CUT.concat([0]);
+  OIL_PRODUCTION_CUML = OIL_PRODUCTION_CUML.concat([ OIL_PRODUCTION_CUML[last]*1.000001 ]);
+  // GAS_OIL_RATIO = GAS_OIL_RATIO.concat([0]);
+  GAS_OIL_RATIO = GAS_OIL_RATIO.concat([GAS_OIL_RATIO[last]]);
+  // WATER_CUT = WATER_CUT.concat([0]);
+  WATER_CUT = WATER_CUT.concat([WATER_CUT[last]]);
   SCALING_FACTOR = SCALING_FACTOR.concat([0]);
   INTERCEPT_CORR = INTERCEPT_CORR.concat([0]);
 
