@@ -10,7 +10,7 @@
     * { box-sizing:border-box }
     body { margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; background:var(--bg); color:var(--text) }
 
-    /* SLB-blue header */
+    /* I style the header in SLB blue */
     header {
       padding:14px 16px;
       display:flex; gap:10px; flex-wrap:wrap; align-items:center;
@@ -30,7 +30,7 @@
     .btn.dark { background:#0b1220; border-color:#2a364d; color:#e5e7eb }
     .hint { color:#e5e7eb; opacity:.85; font-size:11px }
 
-    /* TABS: wrap to multiple rows and sit further below header */
+    /* I wrap tabs to multiple rows and give them breathing room below the header */
     .tabs {
       display:flex; flex-wrap:wrap; gap:6px; row-gap:8px;
       padding:10px 16px; margin-top:28px;
@@ -94,7 +94,7 @@
           </div>
         </div>
 
-        <!-- Units selector -->
+        <!-- I render unit selectors -->
         <div class="units">
           <label title="Time in days since start">
             Time Unit
@@ -169,7 +169,7 @@
   </div>
 
 <script>
-/** ---------- Constants / State ---------- */
+/** I keep constants and state here. */
 const WELL_COLS = [
   "Time",
   "Well Block Pressure - 9P",
@@ -192,10 +192,10 @@ const PSI_TO_KPA = 6.894757293168;
 const BAR_TO_KPA = 100.0;
 const MPA_TO_KPA = 1000.0;
 
-let wells = []; // {id, name, tableData: string[][], units:{time,bp,bhp,oil,gas,wat}}
+let wells = []; // I store {id, name, tableData, units:{time,bp,bhp,oil,gas,wat}}
 let activeWellId = null;
 
-/** ---------- DOM ---------- */
+/** I cache DOM refs. */
 const tabsEl = document.getElementById('tabs');
 const bodyEl = document.getElementById('tableBody');
 const addWellBtn = document.getElementById('addWellBtn');
@@ -214,7 +214,7 @@ const u_oil = document.getElementById('u_oil');
 const u_gas = document.getElementById('u_gas');
 const u_wat = document.getElementById('u_wat');
 
-/** ---------- Utils ---------- */
+/** Tiny helpers I use throughout. */
 const uuid = () => Math.random().toString(36).slice(2,9);
 const toNumber = v => {
   if (typeof v === 'number') return v;
@@ -250,8 +250,8 @@ function nextAvailableWellName() {
   return `P${n}`;
 }
 
-/** ---------- Units helpers (to canonical) ---------- */
-// Canonical: time=days, pressure=kPa, oil/gas/water=m³/day
+/** I normalize units to a canonical form. */
+// I use: time=days, pressure=kPa, rates=m³/day.
 function factorTimeToDays(code){
   switch(code){
     case 'd': return 1;
@@ -273,16 +273,16 @@ function factorPressureToKPa(code){
 function factorOilWaterToM3d(code){
   switch(code){
     case 'm3d': return 1;
-    case 'stbd': return STB_TO_M3;    // STB/d → m3/d
-    case 'm3h': return 24;            // m3/h → m3/d
+    case 'stbd': return STB_TO_M3;    // I convert STB/d → m³/d
+    case 'm3h': return 24;            // I convert m³/h → m³/d
     default: return 1;
   }
 }
 function factorGasToM3d(code){
   switch(code){
     case 'm3d': return 1;
-    case 'mscf': return 28.316846592;     // MSCF/d → m3/d
-    case 'mmscf': return 28316.846592;    // MMSCF/d → m3/d
+    case 'mscf': return 28.316846592;     // I convert MSCF/d → m³/d
+    case 'mmscf': return 28316.846592;    // I convert MMSCF/d → m³/d
     default: return 1;
   }
 }
@@ -290,7 +290,7 @@ function applyFactorArray(arr, factor){
   return arr.map(v => Number.isFinite(v) ? v*factor : NaN);
 }
 
-/** ---------- Tabs & Wells ---------- */
+/** Tabs & wells: I manage add/rename/activate/delete here. */
 function defaultUnits(){
   return { time:'d', bp:'kpa', bhp:'kpa', oil:'m3d', gas:'m3d', wat:'m3d' };
 }
@@ -354,7 +354,7 @@ function renderTabs() {
   });
 }
 
-/** ---------- Table ---------- */
+/** Table: I render and handle edit/paste. */
 function renderTable() {
   const w = wells.find(x=>x.id===activeWellId); if (!w) return;
   bodyEl.innerHTML='';
@@ -400,7 +400,7 @@ function onCellPaste(e){
   }
 }
 
-/** ---------- Units UI ---------- */
+/** Units UI: I keep selectors in sync with the active well. */
 function renderUnits(){
   const w = wells.find(x=>x.id===activeWellId); if (!w) return;
   u_time.value = w.units.time;
@@ -424,7 +424,7 @@ function renderUnits(){
   });
 });
 
-/** ---------- Math ---------- */
+/** Math helpers and series calculations. */
 function safeDiv(a,b){ return (Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(b)>0)?(a/b):NaN; }
 function cumsum(arr){ const out=[]; let s=0; for (const v of arr){ const x=Number.isFinite(v)?v:0; s+=x; out.push(s) } return out; }
 function linearFit(x,y){
@@ -449,7 +449,7 @@ function computeWellSeries(well){
   const GAS_raw  = data.map(r=>toNumber(r[4]));
   const WAT_raw  = data.map(r=>toNumber(r[5]));
 
-  // trim trailing empties
+  // I trim trailing empty rows
   let L = DAYS_raw.length;
   for (; L>0; L--){
     const i=L-1;
@@ -457,7 +457,7 @@ function computeWellSeries(well){
   }
   if (L===0) return null;
 
-  // Units → canonical
+  // I convert to canonical units
   const fTime = factorTimeToDays(well.units.time);
   const fBP = factorPressureToKPa(well.units.bp);
   const fBHP = factorPressureToKPa(well.units.bhp);
@@ -472,14 +472,14 @@ function computeWellSeries(well){
   const GAS_m3d = applyFactorArray(GAS_raw.slice(0,L), fGas);
   const WAT_m3d = applyFactorArray(WAT_raw.slice(0,L), fWat);
 
-  // unit conversions for calculations/exports
+  // I build alternate units for calculations/exports
   const oil_stb = OIL_m3d.map(v=>Number.isFinite(v)? v*M3_TO_STB : NaN);
   const wat_stb = WAT_m3d.map(v=>Number.isFinite(v)? v*M3_TO_STB : NaN);
   const gas_mmscf = GAS_m3d.map(v=>Number.isFinite(v)? v*M3_TO_MMSCF : NaN);
-  const BP_psi = BP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);   // kPa → psi
+  const BP_psi = BP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);   // I convert kPa → psi
   const BHP_psi = BHP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);
 
-  // GOR & Water Cut (fraction)
+  // I compute GOR and water cut (fraction)
   const GOR = oil_stb.map((o,i)=>safeDiv(gas_mmscf[i], o));
   const WATER_FRAC = oil_stb.map((o,i)=>{
     const w = wat_stb[i];
@@ -487,34 +487,34 @@ function computeWellSeries(well){
     return denom > 0 ? safeDiv(w, denom) : NaN;
   });
 
-  // Δdays + cumulative oil
+  // I accumulate oil via Δdays integration
   const dDays = Days.map(v=>Number.isFinite(v)?v:0);
   for (let i=dDays.length-1;i>=1;i--) dDays[i] = (Number.isFinite(Days[i])?Days[i]:0) - (Number.isFinite(Days[i-1])?Days[i-1]:0);
   const oilVolPerDate = oil_stb.map((q,i)=>(Number.isFinite(q)?q:0) * (Number.isFinite(dDays[i])?dDays[i]:0));
   const CumOil = cumsum(oilVolPerDate);
 
-  // PI
+  // I compute PI = q/(BP−BHP)
   const dP = BP_psi.map((bp,i)=> (Number.isFinite(bp)&&Number.isFinite(BHP_psi[i])) ? (bp - BHP_psi[i]) : NaN);
   let PI = oil_stb.map((q,i)=>safeDiv(q, dP[i])); // STB/d/psi
 
-  // PI[0] rule
+  // I back-fill PI[0] from the early trend
   if (PI.length >= 3 && Number.isFinite(PI[1]) && Number.isFinite(PI[2])) {
     PI[0] = PI[1] + (PI[1] - PI[2]);
   } else if (PI.length >= 2 && Number.isFinite(PI[1])) {
     PI[0] = PI[1];
   }
 
-  // Potential & linear fit → intercept series
+  // I fit Potential vs PI to derive an intercept series
   const Potential = PI.map((pi,i)=> Number.isFinite(pi)&&Number.isFinite(BP_psi[i]) ? pi*BP_psi[i] : NaN);
   const {m,b} = linearFit(PI, Potential);
   let INTERCEPT = PI.map(pi=>Number.isFinite(pi)? (m*pi + b) : NaN);
 
-  // First-row fixes
+  // I smooth the first row using the second when it exists
   if (GOR.length>=2 && Number.isFinite(GOR[1])) GOR[0]=GOR[1];
   if (WATER_FRAC.length>=2 && Number.isFinite(WATER_FRAC[1])) WATER_FRAC[0]=WATER_FRAC[1];
   if (INTERCEPT.length>=2) INTERCEPT[0] = INTERCEPT[1];
 
-  // sanitize
+  // I replace NaNs with 0 to keep arrays stable
   const sanitize = a => a.map(v=>Number.isFinite(v)?v:0);
   let OIL_PRODUCTION_CUML = sanitize(CumOil);
   let GAS_OIL_RATIO = sanitize(GOR);
@@ -522,7 +522,7 @@ function computeWellSeries(well){
   let SCALING_FACTOR = sanitize(PI);
   let INTERCEPT_CORR = sanitize(INTERCEPT);
 
-  // Append extra final step: keep cumulative, zero the rest
+  // I append a final step: carry cumulative/ratios, zero the rest
   const last = OIL_PRODUCTION_CUML.length-1;
   OIL_PRODUCTION_CUML = OIL_PRODUCTION_CUML.concat([ OIL_PRODUCTION_CUML[last]*1.000001 ]);
   // GAS_OIL_RATIO = GAS_OIL_RATIO.concat([0]);
@@ -543,7 +543,7 @@ function computeWellSeries(well){
   };
 }
 
-/** ---------- Export ---------- */
+/** Export: I assemble the JSON payload. */
 function buildJson(){
   const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1" };
   for (const w of wells){
@@ -572,7 +572,7 @@ function download(filename, obj){
   URL.revokeObjectURL(url);
 }
 
-/** ---------- Duplicate ---------- */
+/** Duplicate: I clone the active well. */
 function duplicateActiveWell(copies) {
   const src = wells.find(x=>x.id===activeWellId);
   if (!src) return;
@@ -580,14 +580,14 @@ function duplicateActiveWell(copies) {
   for (let i=0;i<count;i++) {
     const name = nextAvailableWellName();
     const id = uuid();
-    const tableCopy = src.tableData.map(row => row.slice()); // deep copy
+    const tableCopy = src.tableData.map(row => row.slice());
     const unitsCopy = { ...src.units };
     wells.push({ id, name, tableData: tableCopy, units: unitsCopy });
   }
   renderTabs();
 }
 
-/** ---------- Actions ---------- */
+/** UI actions wired up. */
 addWellBtn.onclick = () => addWell();
 downloadBtn.onclick = () => download('ipr_decline_curves.json', buildJson());
 deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
@@ -595,7 +595,7 @@ deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?"))
 clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); };
 duplicateBtn.onclick = () => { const n = Number(copyCountInput.value); duplicateActiveWell(Number.isFinite(n) ? n : 1); };
 
-/** ---------- Boot ---------- */
+/** Boot: I seed with P1. */
 addWell('P1');
 </script>
 </body>
