@@ -13,24 +13,43 @@
     .btn{padding:8px 12px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-weight:600;font-size:12px}
     .btn:hover{background:rgba(255,255,255,.1)}.btn.brand{background:#16a34a;border-color:#0e7a34;color:#052e16}.btn.danger{background:var(--danger);border-color:#991b1b;color:#fff}.btn.dark{background:#0b1220;border-color:#2a364d;color:#e5e7eb}
     .hint{color:#e5e7eb;opacity:.85;font-size:11px}
-    .tabs{display:flex;flex-wrap:wrap;gap:6px;row-gap:8px;padding:10px 16px;margin-top:28px;border-bottom:1px solid var(--border);background:#0e1527}
+    .tabs{display:flex;flex-wrap:wrap;gap:6px;row-gap:8px;padding:10px 16px;margin-top:12px;border-bottom:1px solid var(--border);background:#0e1527}
     .tab{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);background:var(--card);border-radius:10px;cursor:pointer;white-space:nowrap;font-size:12px}
     .tab.active{outline:2px solid var(--accent)}.tab input{background:transparent;color:#e5e7eb;border:none;width:120px;font-weight:600;font-size:12px}.tab .x{font-weight:800;color:#94a3b8;cursor:pointer}
+
+    /* page-level mode tabs */
+    .mtabs{display:flex;gap:8px;padding:10px 16px;background:#0b1220;border-bottom:1px solid var(--border)}
+    .mtab{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1528;cursor:pointer;font-size:12px;color:#cbd5e1;opacity:.9}
+    .mtab.active{outline:2px solid var(--accent);opacity:1}
+
+    /* Layout */
     .wrap{padding:16px;display:flex;justify-content:center}.container{width:100%;max-width:980px}.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .controls{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;font-size:12px}.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
     .units{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:8px;margin:10px 0 6px}
     .units label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted)}
     select,input[type="number"]{background:#0b1220;color:#e5e7eb;border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px}
     input[type="number"]{width:72px}
+
     table{width:100%;border-collapse:collapse;table-layout:fixed}
     thead th{position:sticky;top:0;background:#0b1220;z-index:1}
     th,td{border:1px solid #1f2937;padding:6px;text-align:left;vertical-align:top;font-size:12px;line-height:1.2}
     td[contenteditable="true"]{outline:none}td:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+
     .plot-title{font-size:12px;color:var(--muted);margin-bottom:8px}
     .plot-wrap{width:100%;overflow:auto}.plot-empty{font-size:12px;color:var(--muted);padding:8px}
     .diag{font-size:12px;color:#eab308}.diag .ok{color:#22c55e}.diag .bad{color:#f87171}.diag ul{margin:6px 0 0 18px;padding:0}
     .legend{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:11px;color:#cbd5e1;flex-wrap:wrap}.legend .item{display:flex;gap:6px;align-items:center}.chip{width:14px;height:3px;border-radius:2px;display:inline-block}
+
+    /* discrete QC toggle button (top-right) */
+    .spacer{flex:1}
+    .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.15);cursor:pointer}
+    .iconbtn:hover{background:rgba(255,255,255,.12)}
+    .iconbtn svg{width:16px;height:16px;opacity:.9}
+
+    /* helper */
+    .hidden{display:none !important}
   </style>
 </head>
 <body>
@@ -39,12 +58,30 @@
       <div class="title">IXFM Decline Curve Generator</div>
       <div class="subtitle">Prototype Version</div>
     </div>
+
     <button class="btn dark" id="addWellBtn">+ Add Well</button>
     <button class="btn brand" id="downloadBtn">Download JSON (Anchored)</button>
     <button class="btn danger" id="deleteAllBtn">Delete All Wells</button>
     <span class="hint">Tip: paste from Excel; rows auto-expand.</span>
+
+    <div class="spacer"></div>
+
+    <!-- QC plots visibility toggle -->
+    <button class="iconbtn" id="qcToggleBtn" title="Toggle QC plots">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </button>
   </header>
 
+  <!-- page-level mode tabs -->
+  <div class="mtabs" id="modeTabs">
+    <div class="mtab active" data-mode="smoothing">Smoothing DC</div>
+    <div class="mtab" data-mode="raw">Raw DC</div>
+  </div>
+
+  <!-- well tabs -->
   <div class="tabs" id="tabs"></div>
 
   <div class="wrap">
@@ -126,14 +163,16 @@
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
+      <!-- legend card: now tied to QC toggle -->
+      <div class="card qc-plot" style="margin-top:12px;">
         <div class="legend mono">
           <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
           <div class="item"><span class="chip" style="background:#eab308"></span>Anchored Fit</div>
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
+      <!-- QC plot cards -->
+      <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">Intercept (q @ pwf=0) vs Cumulative Oil — STB/day</div>
         <div class="plot-wrap">
           <svg id="plotIntercept" width="100%" height="280" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
@@ -141,7 +180,7 @@
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
+      <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">IPR (Productivity Index) vs Cumulative Oil — STB/(day.psi)</div>
         <div class="plot-wrap">
           <svg id="plotPI" width="100%" height="280" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
@@ -149,7 +188,7 @@
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
+      <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">IPR vs Intercept — Scatter (Raw vs Anchored)</div>
         <div class="plot-wrap">
           <svg id="plotPIvsInt" width="100%" height="300" viewBox="0 0 900 300" preserveAspectRatio="none"></svg>
@@ -157,7 +196,8 @@
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px;">
+      <!-- diagnostics card: now tied to QC toggle -->
+      <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">Diagnostics — Sanity Checks (Darcy IPR)</div>
         <div class="diag" id="diagBox"><span class="ok">No issues yet.</span></div>
       </div>
@@ -180,7 +220,12 @@ const PSI_TO_KPA = 6.894757293168, BAR_TO_KPA = 100.0, MPA_TO_KPA = 1000.0;
 
 let wells = []; let activeWellId = null;
 
+/* page mode + QC toggle state */
+let appMode = 'smoothing'; // 'smoothing' | 'raw'
+let qcVisible = false; // default hidden on boot
+
 /** DOM refs */
+const modeTabsEl = document.getElementById('modeTabs');
 const tabsEl = document.getElementById('tabs');
 const bodyEl = document.getElementById('tableBody');
 const addWellBtn = document.getElementById('addWellBtn');
@@ -191,6 +236,8 @@ const clearDataBtn = document.getElementById('clearDataBtn');
 const duplicateBtn = document.getElementById('duplicateBtn');
 const copyCountInput = document.getElementById('copyCount');
 const activeWellNameEl = document.getElementById('activeWellName');
+const qcToggleBtn = document.getElementById('qcToggleBtn');
+
 const u_time = document.getElementById('u_time');
 const u_bp = document.getElementById('u_bp');
 const u_bhp = document.getElementById('u_bhp');
@@ -213,6 +260,9 @@ function ensureRows(well, rowsNeeded){ const add = Math.max(0, rowsNeeded - well
 function isWellEmpty(well){ for (const row of well.tableData) for (const cell of row) if (String(cell ?? '').trim() !== '') return false; return true; }
 function nextAvailableWellName(){ const used=new Set(); for(const w of wells){ const m=/^P(\d+)$/.exec(w.name.trim()); if(m) used.add(+m[1]); } let n=1; while(used.has(n)) n++; return `P${n}`; }
 
+/* sanitize for JSON safety */
+function sanitizeArray(arr){ return (arr||[]).map(v => Number.isFinite(v) ? v : 0); }
+
 /** Units */
 function factorTimeToDays(code){ switch(code){ case 'd': return 1; case 'h': return 1/24; case 'mo30': return 30; case 'y365': return 365; default: return 1; } }
 function factorPressureToKPa(code){ switch(code){ case 'kpa': return 1; case 'bar': return BAR_TO_KPA; case 'mpa': return MPA_TO_KPA; case 'psi': return PSI_TO_KPA; default: return 1; } }
@@ -220,7 +270,7 @@ function factorOilWaterToM3d(code){ switch(code){ case 'm3d': return 1; case 'st
 function factorGasToM3d(code){ switch(code){ case 'm3d': return 1; case 'mscf': return 28.316846592; case 'mmscf': return 28316.846592; default: return 1; } }
 function applyFactorArray(arr, factor){ return arr.map(v => Number.isFinite(v) ? v*factor : NaN); }
 
-/** Math & fitting */
+/** Math & fitting (unchanged) */
 const MAX_SEGMENTS = 6;
 function aicFromSSE(sse, n, k){ return (n>0) ? (n * Math.log(Math.max(sse/n,1e-18)) + 2*k) : Infinity; }
 function enforceNonIncreasing(arr){
@@ -369,14 +419,12 @@ function bestAnchoredPiecewise_Weighted_withFixedEnds(X,Y,A0,W,fixedGlobalEnds){
     for(let i=0;i<X.length;i++){ const xi=X[i], yi=Y[i], wi=(W?W[i]:1); if(Number.isFinite(xi)&&Number.isFinite(yi)&&yi>=0&&(wi>0)){ out[i]=yi; j++; } }
     return {pred:enforceNonIncreasing(out)};
   }
-  // Map global fixed ends -> indices in the filtered PI domain
   const piEnds = [];
   let last = -1;
   for (const gEnd of fixedGlobalEnds){
-    // find first index in validIdx >= gEnd
     let k = validIdx.findIndex(id => id >= gEnd);
     if (k === -1) k = validIdx.length - 1;
-    if (k <= last) continue; // keep strictly increasing
+    if (k <= last) continue;
     piEnds.push(k);
     last = k;
   }
@@ -463,15 +511,14 @@ function computeWellSeriesPhysical(well){
 
   const Xcum = CumOil.slice();
 
-  // 1) Intercept: anchored pw-linear (AIC) → ends (in filtered space) + valid indices in original space
+  // 1) Intercept fit
   const interceptModel = bestAnchoredPiecewise_Unweighted(Xcum, INTERCEPT_DARCY, IntAnchor);
   const InterceptA = interceptModel.pred;
   const endsIntFiltered = interceptModel.ends;
-  const validIntIdx = interceptModel.validIdx; // positions in original arrays used by Intercept fit
-  // map filtered ends -> global indices
+  const validIntIdx = interceptModel.validIdx;
   const endsIntGlobal = endsIntFiltered.map(fi => validIntIdx[fi]);
 
-  // 2) PI weights from Δp (clamped to reduce low-Δp noise)
+  // 2) PI weights from Δp
   const dpValid = dP.filter(Number.isFinite).filter(v=>v>0);
   const dpMed = dpValid.length ? dpValid.sort((a,b)=>a-b)[Math.floor(dpValid.length/2)] : 1;
   const wPI = dP.map(v=>{
@@ -480,14 +527,14 @@ function computeWellSeriesPhysical(well){
     return Math.min(4, Math.max(0.25, r));
   });
 
-  // 3) PI: force to share Intercept's breakpoints by mapping global ends to PI's filtered domain
+  // 3) PI fit, sharing breakpoints
   const piForced = bestAnchoredPiecewise_Weighted_withFixedEnds(Xcum, PI, PIAnchor, wPI, endsIntGlobal);
   const PIA = piForced.pred;
 
   const sanitize = a => a.map(v=>Number.isFinite(v)?v:0);
 
   return {
-    name: well.name.replace(/\\./g,''),
+    name: well.name.replace(/\./g,''),
     length: Xcum.length,
     OIL_PRODUCTION_CUML: sanitize(CumOil),
     GAS_OIL_RATIO: sanitize(GOR),
@@ -508,16 +555,19 @@ function computeWellSeriesPhysical(well){
   };
 }
 
-/** Export JSON (Anchored only) */
+/** Export JSON */
 function enforceLastZero(arr){ if(!arr||!arr.length) return arr; const out=arr.slice(); out[out.length-1]=0; return out; }
-function buildJson(){
-  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode:"anchored" };
+
+/* unified builder that respects appMode */
+function buildJson(mode){
+  const isAnchored = (mode === 'smoothing');
+  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode: isAnchored ? "anchored" : "raw" };
+
   for (const w of wells){
     const c = computeWellSeriesPhysical(w);
     if (!c) continue;
+
     payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
-    const INT_pp = enforceLastZero(c.INTERCEPT_A);
-    const PI_pp  = enforceLastZero(c.PI_A);
 
     const baseOrder = [
       ["OIL_PRODUCTION_CUML","Oil production cumulative", c.OIL_PRODUCTION_CUML, "STB", "Liquid_Production_Volume"],
@@ -527,19 +577,51 @@ function buildJson(){
     for (const [key, desc, arr, unit, mid] of baseOrder){
       payload.series.push({ description: desc, displayUnit: unit, entityName: c.name, entityType: "WELL", measurementID: mid, name: key, values: arr.slice() });
     }
-    const iprOrder = [
-      ["INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", INT_pp],
-      ["SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", PI_pp]
-    ];
-    for (const [key, arr] of iprOrder){
-      const meta = SERIES_META[key];
-      payload.series.push({ description: meta.description, displayUnit: meta.displayUnit, entityName: c.name, entityType: "WELL", measurementID: meta.measurementID, name: key, values: arr.slice() });
+
+    if (isAnchored){
+      const INT_pp = enforceLastZero(c.INTERCEPT_A);
+      const PI_pp  = enforceLastZero(c.PI_A);
+      payload.series.push({
+        description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
+        displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
+        entityName: c.name, entityType:"WELL",
+        measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID,
+        name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH",
+        values: INT_pp.slice()
+      });
+      payload.series.push({
+        description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description,
+        displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
+        entityName: c.name, entityType:"WELL",
+        measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID,
+        name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH",
+        values: PI_pp.slice()
+      });
+    } else {
+      const INT_raw = sanitizeArray(c.__plot?.InterceptDarcy || []);
+      const PI_raw  = sanitizeArray(c.__plot?.PI || []);
+      payload.series.push({
+        description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
+        displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
+        entityName: c.name, entityType:"WELL",
+        measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID,
+        name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH",
+        values: INT_raw.slice()
+      });
+      payload.series.push({
+        description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description,
+        displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
+        entityName: c.name, entityType:"WELL",
+        measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID,
+        name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH",
+        values: PI_raw.slice()
+      });
     }
   }
   return payload;
 }
 
-/** Plotting */
+/** Plotting (unchanged) */
 function clearSVG(svg){ while (svg.firstChild) svg.removeChild(svg.firstChild); }
 function makeSVG(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 
@@ -646,7 +728,7 @@ function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
   }
 }
 
-/** Diagnostics */
+/** Diagnostics (unchanged) */
 function buildDiagnostics(plot){
   const msgs = [];
   const tolRel = 0.05;
@@ -754,9 +836,39 @@ function downloadFile(filename, obj){
   }
 }
 
+/** Mode UI wiring */
+function updateModeUI(){
+  Array.from(modeTabsEl.querySelectorAll('.mtab')).forEach(el=>{
+    el.classList.toggle('active', el.dataset.mode === appMode);
+  });
+  downloadBtn.textContent = appMode === 'smoothing' ? 'Download JSON (Anchored)' : 'Download JSON (Raw)';
+}
+modeTabsEl.addEventListener('click', (e)=>{
+  const t = e.target.closest('.mtab');
+  if(!t) return;
+  const mode = t.dataset.mode;
+  if (mode && (mode === 'smoothing' || mode === 'raw')){
+    appMode = mode;
+    updateModeUI();
+  }
+});
+
+/** QC plots toggle (display only) */
+function applyQcVisibility(){
+  // why: single control hides plots, legend, and diagnostics together
+  document.querySelectorAll('.qc-plot').forEach(el => el.classList.toggle('hidden', !qcVisible));
+  qcToggleBtn.style.opacity = qcVisible ? '1' : '0.6';
+}
+qcToggleBtn.onclick = () => { qcVisible = !qcVisible; applyQcVisibility(); };
+
 /** UI actions */
 addWellBtn.onclick = () => addWell();
-downloadBtn.onclick = () => downloadFile(`ipr_decline_curves_anchored.json`, buildJson());
+downloadBtn.onclick = () => {
+  const mode = appMode;
+  const data = buildJson(mode);
+  const fname = mode === 'smoothing' ? 'ipr_decline_curves_anchored.json' : 'ipr_decline_curves_raw.json';
+  downloadFile(fname, data);
+};
 deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
 deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?")) resetAllWells(); };
 clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); safeRenderAll(); };
@@ -788,7 +900,9 @@ window.onerror = function(message, source, lineno, colno, error){
 };
 
 /** Boot */
+updateModeUI();
 addWell('P1');
+applyQcVisibility(); // ensure hidden on page boot
 </script>
 </body>
 </html>
