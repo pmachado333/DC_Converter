@@ -1,3 +1,4 @@
+<!-- /mnt/data/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,7 +46,6 @@
     .diag .ok { color:#22c55e }
     .diag .bad { color:#f87171 }
     .diag ul { margin:6px 0 0 18px; padding:0 }
-    .overlay-bar { display:flex; gap:12px; align-items:center; margin:8px 0 4px; font-size:12px; color:var(--muted) }
     .legend { display:flex; gap:12px; align-items:center; margin-top:6px; font-size:11px; color:#cbd5e1 }
     .legend .item { display:flex; gap:6px; align-items:center }
     .chip { width:14px; height:3px; border-radius:2px; display:inline-block }
@@ -151,14 +151,9 @@
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="overlay-bar mono">
-          <label><input type="checkbox" id="overlayVogel"> Overlay Vogel IPR (nonlinear)</label>
-          <span class="hint">Export & diagnostics remain Darcy-based.</span>
-        </div>
         <div class="legend mono">
           <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
           <div class="item"><span class="chip" style="background:#a78bfa"></span>Reconstructed (TLS)</div>
-          <div class="item"><span class="chip" style="background:#22c55e"></span>Vogel (overlay)</div>
         </div>
       </div>
 
@@ -239,7 +234,6 @@ const emptyIntercept = document.getElementById('emptyIntercept');
 const emptyPI = document.getElementById('emptyPI');
 const emptyPIvsInt = document.getElementById('emptyPIvsInt');
 const diagBox = document.getElementById('diagBox');
-const overlayVogel = document.getElementById('overlayVogel');
 
 /** Helpers */
 const uuid = () => Math.random().toString(36).slice(2,9);
@@ -276,14 +270,15 @@ function resetAllWells() { wells = []; addWell('P1'); }
 function setActiveWell(id) { activeWellId = id; activeWellNameEl.textContent = wells.find(w=>w.id===id)?.name ?? ''; }
 function renameWell(id,newName) { const w = wells.find(x=>x.id===id); if (!w) return; w.name = newName.trim() || w.name; if (id===activeWellId) activeWellNameEl.textContent = w.name; }
 function renderTabs() {
-  tabsEl.innerHTML = '';
+  const tabsElLoc = tabsEl;
+  tabsElLoc.innerHTML = '';
   wells.forEach(w=>{
     const tab=document.createElement('div');
     tab.className='tab'+(w.id===activeWellId?' active':''); 
     tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); renderAllPlotsAndDiag(); };
     const input=document.createElement('input'); input.value=w.name; input.oninput=e=>renameWell(w.id,e.target.value);
     const close=document.createElement('span'); close.className='x'; close.textContent='×'; close.onclick=(ev)=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); };
-    tab.appendChild(input); tab.appendChild(close); tabsEl.appendChild(tab);
+    tab.appendChild(input); tab.appendChild(close); tabsElLoc.appendChild(tab);
   });
 }
 
@@ -363,7 +358,7 @@ function tlsProjectPoint(fit, x, y){
 function tlsYgivenX(fit, x){
   const EPS = 1e-12;
   if (!fit) return NaN;
-  if (Math.abs(fit.ux) < EPS) return fit.my; // vertical: fallback
+  if (Math.abs(fit.ux) < EPS) return fit.my;
   const m = fit.uy / fit.ux;
   const b = fit.my - m*fit.mx;
   return m*x + b;
@@ -439,18 +434,7 @@ function computeWellSeriesPhysical(well){
     INTERCEPT_DARCY[0] = INTERCEPT_DARCY[1];
   }
 
-  // Vogel overlay (optional)
-  let INTERCEPT_VOGEL = oil_stb.map((q,i)=>{
-    const pr = BP_psi[i]; const pwf = BHP_psi[i];
-    if (!Number.isFinite(q) || !Number.isFinite(pr) || pr<=0) return NaN;
-    const x = clamp01(Number.isFinite(pwf)? pwf/pr : NaN);
-    const denom = 1 - 0.2*x - 0.8*x*x;
-    if (!(denom>0)) return NaN;
-    const qmax = q / denom;
-    return Number.isFinite(qmax) ? Math.max(0, qmax) : NaN;
-  });
-
-  // === TLS: fit relation between Intercept (x) and PI (y) ===
+  // TLS fit for (Intercept vs PI)
   const EPS_Q = 1e-9, EPS_DP = 1e-6;
   const fitXs = [], fitYs = [];
   for (let i=0;i<L;i++){
@@ -459,30 +443,26 @@ function computeWellSeriesPhysical(well){
     if (!Number.isFinite(xi) || !Number.isFinite(yi)) continue;
     const q = oil_stb[i];
     const dp = dP[i];
-    if (i===0 && Number.isFinite(q) && Math.abs(q) <= EPS_Q) continue; // exclude first-row zero-flow from fit
-    if (Number.isFinite(dp) && Math.abs(dp) <= EPS_DP) continue;       // exclude unstable Δp
+    if (i===0 && Number.isFinite(q) && Math.abs(q) <= EPS_Q) continue; // avoid zero-flow first row
+    if (Number.isFinite(dp) && Math.abs(dp) <= EPS_DP) continue;       // unstable Δp
     fitXs.push(xi);
     fitYs.push(yi);
   }
   let fit = null;
   if (fitXs.length >= 2) fit = tlsFit(fitXs, fitYs);
 
-  // Reconstruct: orthogonal projection for all rows.
-  // Special case for i=0 with q≈0: keep Intercept raw, compute PI from y=f(x) on the TLS line.
   let INTERCEPT_TLS = INTERCEPT_DARCY.slice();
   let PI_TLS = PI.slice();
   if (fit){
-    // Project all except potential first-row zero-flow special case
     for (let i=0;i<L;i++){
       const xi = INTERCEPT_DARCY[i];
       const yi = PI[i];
       if (!Number.isFinite(xi) || !Number.isFinite(yi)) continue;
-      if (i===0 && Number.isFinite(oil_stb[0]) && Math.abs(oil_stb[0])<=EPS_Q) continue; // handle after loop
+      if (i===0 && Number.isFinite(oil_stb[0]) && Math.abs(oil_stb[0])<=EPS_Q) continue;
       const pr = tlsProjectPoint(fit, xi, yi);
       INTERCEPT_TLS[i] = pr[0];
       PI_TLS[i] = pr[1];
     }
-    // Now set first row to TLS maxima if q0≈0
     if (Number.isFinite(oil_stb[0]) && Math.abs(oil_stb[0])<=EPS_Q){
       const xs = INTERCEPT_TLS.filter(Number.isFinite);
       const xMax = xs.length ? Math.max.apply(null, xs) : INTERCEPT_DARCY[0];
@@ -492,7 +472,6 @@ function computeWellSeriesPhysical(well){
     }
   }
 
-  // For export, sanitize; for plots, keep raw NaNs to avoid fake zeros.
   const sanitize = a => a.map(v=>Number.isFinite(v)?v:0);
 
   return {
@@ -501,14 +480,12 @@ function computeWellSeriesPhysical(well){
     OIL_PRODUCTION_CUML: sanitize(CumOil),
     GAS_OIL_RATIO: sanitize(GOR),
     WATER_CUT: sanitize(WATER_FRAC),
-    // Export TLS recon, not raw:
     INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: sanitize(INTERCEPT_TLS),
     SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: sanitize(PI_TLS),
     __plot: {
       Days,
       InterceptDarcy: INTERCEPT_DARCY.slice(),
       InterceptRecon: INTERCEPT_TLS.slice(),
-      InterceptVogel: INTERCEPT_VOGEL.slice(),
       PI: PI.slice(),
       PIRecon: PI_TLS.slice(),
       BP_psi: BP_psi.slice(),
@@ -527,6 +504,12 @@ function buildJson(){
     payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
     const order = ["OIL_PRODUCTION_CUML","GAS_OIL_RATIO","WATER_CUT","INTERCEPT_OIL_PHASE_IPR_REF_DEPTH","SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH"];
     for (const key of order){
+      // Force last value to zero for the two requested series (export-only override).
+      let values = c[key];
+      if (key === "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH" || key === "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH") {
+        values = c[key].slice();
+        if (values.length > 0) values[values.length - 1] = 0; // ensure tail is zero
+      }
       payload.series.push({
         description: SERIES_META[key].description,
         displayUnit: SERIES_META[key].displayUnit,
@@ -534,7 +517,7 @@ function buildJson(){
         entityType: "WELL",
         measurementID: SERIES_META[key].measurementID,
         name: key,
-        values: c[key]
+        values
       });
     }
   }
@@ -725,18 +708,17 @@ function renderAllPlotsAndDiag(){
 
   const X = comp.__plot.Days || [];
   const YintD = comp.__plot.InterceptDarcy || [];
-  const YintV = comp.__plot.InterceptVogel || [];
   const YintR = comp.__plot.InterceptRecon || [];
   const Ypi = comp.__plot.PI || [];
   const YpiR = comp.__plot.PIRecon || [];
 
-  const ptsIntD = [], ptsIntV = [], ptsIntRecon = [];
+  const ptsIntD = [], ptsIntRecon = [];
   const ptsPI = [], ptsPIRecon = [];
   const ptsScatterRaw = [], ptsReconScatter = [];
 
   for (let i=0;i<X.length; i++){
     const x = X[i];
-    const itcD = YintD[i], itcR = YintR[i], itcV = YintV[i];
+    const itcD = YintD[i], itcR = YintR[i];
     const pi = Ypi[i], piR = YpiR[i];
     if (Number.isFinite(x) && Number.isFinite(itcD)) ptsIntD.push([x, itcD]);
     if (Number.isFinite(x) && Number.isFinite(itcR)) ptsIntRecon.push([x, itcR]);
@@ -744,16 +726,12 @@ function renderAllPlotsAndDiag(){
     if (Number.isFinite(x) && Number.isFinite(piR)) ptsPIRecon.push([x, piR]);
     if (Number.isFinite(itcD) && Number.isFinite(pi)) ptsScatterRaw.push([itcD, pi]);
     if (Number.isFinite(itcR) && Number.isFinite(piR)) ptsReconScatter.push([itcR, piR]);
-    if (Number.isFinite(x) && Number.isFinite(itcV)) ptsIntV.push([x, itcV]);
   }
-
-  const doVogel = overlayVogel && overlayVogel.checked;
 
   const seriesInt = [
     { pts: ptsIntD, color: '#3b82f6' },
     { pts: ptsIntRecon, color: '#a78bfa' }
   ];
-  if (doVogel) seriesInt.push({ pts: ptsIntV, color: '#22c55e' });
   renderLineMulti(svgIntercept, seriesInt, {xLabel:'Days', yLabel:'Intercept (STB/d)', emptyEl: emptyIntercept});
 
   const seriesPI = [
@@ -777,14 +755,30 @@ function renderAllPlotsAndDiag(){
   }
 }
 
+/** Units wiring */
+function renderUnits(){
+  const w = wells.find(x=>x.id===activeWellId); if (!w) return;
+  u_time.value = w.units.time;
+  u_bp.value = w.units.bp;
+  u_bhp.value = w.units.bhp;
+  u_oil.value = w.units.oil;
+  u_gas.value = w.units.gas;
+  u_wat.value = w.units.wat;
+}
+u_time.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.time = u_time.value; renderAllPlotsAndDiag(); } };
+u_bp.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.bp = u_bp.value; renderAllPlotsAndDiag(); } };
+u_bhp.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.bhp = u_bhp.value; renderAllPlotsAndDiag(); } };
+u_oil.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.oil = u_oil.value; renderAllPlotsAndDiag(); } };
+u_gas.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.gas = u_gas.value; renderAllPlotsAndDiag(); } };
+u_wat.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.wat = u_wat.value; renderAllPlotsAndDiag(); } };
+
 /** UI actions */
-addWellBtn.onclick = () => addWell();
+document.getElementById('addWellBtn').onclick = () => addWell();
 downloadBtn.onclick = () => download('ipr_decline_curves.json', buildJson());
 deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
 deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?")) resetAllWells(); };
 clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); renderAllPlotsAndDiag(); };
 duplicateBtn.onclick = () => { const n = Number(copyCountInput.value); duplicateActiveWell(Number.isFinite(n) ? n : 1); };
-overlayVogel.onchange = () => renderAllPlotsAndDiag();
 
 /** Boot */
 addWell('P1');
