@@ -18,12 +18,10 @@
     .tab{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);background:var(--card);border-radius:10px;cursor:pointer;white-space:nowrap;font-size:12px}
     .tab.active{outline:2px solid var(--accent)}.tab input{background:transparent;color:#e5e7eb;border:none;width:120px;font-weight:600;font-size:12px}.tab .x{font-weight:800;color:#94a3b8;cursor:pointer}
 
-    /* page-level mode tabs */
     .mtabs{display:flex;gap:8px;padding:10px 16px;background:#0b1220;border-bottom:1px solid var(--border)}
     .mtab{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1528;cursor:pointer;font-size:12px;color:#cbd5e1;opacity:.9}
     .mtab.active{outline:2px solid var(--accent);opacity:1}
 
-    /* layout */
     .wrap{padding:16px;display:flex;justify-content:center}.container{width:100%;max-width:980px}.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .controls{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;font-size:12px}.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
@@ -43,13 +41,11 @@
     .diag{font-size:12px;color:#eab308}.diag .ok{color:#22c55e}.diag .bad{color:#f87171}.diag ul{margin:6px 0 0 18px;padding:0}
     .legend{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:11px;color:#cbd5e1;flex-wrap:wrap}.legend .item{display:flex;gap:6px;align-items:center}.chip{width:14px;height:3px;border-radius:2px;display:inline-block}
 
-    /* header right button */
     .spacer{flex:1}
     .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.15);cursor:pointer}
     .iconbtn:hover{background:rgba(255,255,255,.12)}
     .iconbtn svg{width:16px;height:16px;opacity:.9}
 
-    /* helper */
     .hidden{display:none !important}
   </style>
 </head>
@@ -67,7 +63,6 @@
 
     <div class="spacer"></div>
 
-    <!-- QC toggle -->
     <button class="iconbtn" id="qcToggleBtn" title="Toggle QC plots">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
@@ -76,13 +71,11 @@
     </button>
   </header>
 
-  <!-- mode tabs -->
   <div class="mtabs" id="modeTabs">
     <div class="mtab active" data-mode="smoothing">Smoothing DC</div>
     <div class="mtab" data-mode="raw">Raw DC</div>
   </div>
 
-  <!-- well tabs -->
   <div class="tabs" id="tabs"></div>
 
   <div class="wrap">
@@ -164,7 +157,6 @@
         </div>
       </div>
 
-      <!-- legend hidden with QC -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="legend mono">
           <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
@@ -172,7 +164,6 @@
         </div>
       </div>
 
-      <!-- plots -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">Intercept (q @ pwf=0) vs Cumulative Oil — STB/day</div>
         <div class="plot-wrap">
@@ -197,7 +188,6 @@
         </div>
       </div>
 
-      <!-- diagnostics hidden with QC -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">Diagnostics — Sanity Checks (Darcy IPR)</div>
         <div class="diag" id="diagBox"><span class="ok">No issues yet.</span></div>
@@ -223,7 +213,7 @@ let wells = []; let activeWellId = null;
 
 /* modes + QC */
 let appMode = 'smoothing';
-let qcVisible = false; // hidden on boot
+let qcVisible = false;
 
 /** DOM refs */
 const modeTabsEl = document.getElementById('modeTabs');
@@ -567,7 +557,6 @@ function buildJson(mode){
 
     payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
 
-    // common series
     const baseOrder = [
       ["OIL_PRODUCTION_CUML","Oil production cumulative", c.OIL_PRODUCTION_CUML, "STB", "Liquid_Production_Volume"],
       ["GAS_OIL_RATIO","Gas oil ratio", c.GAS_OIL_RATIO, "MSCF/STB", "Gas_To_Liquid_Ratio"],
@@ -597,17 +586,19 @@ function buildJson(mode){
         values: PI_pp.slice()
       });
     } else {
-      // RAW: no fitting
+      // RAW export: first cannot be zero; last must be zero
       const INT_raw = sanitizeArray(c.__plot?.InterceptDarcy || []);
       const PI_raw  = sanitizeArray(c.__plot?.PI || []);
 
-      // why: avoid “well closed” due to leading zero; follow user's exact rule
       if (INT_raw.length >= 2 && INT_raw[0] === 0 && Number.isFinite(INT_raw[1]) && INT_raw[1] > 0) {
-        INT_raw[0] = INT_raw[1];
+        INT_raw[0] = INT_raw[1]; // make first non-zero
       }
       if (PI_raw.length >= 2 && PI_raw[0] === 0 && Number.isFinite(PI_raw[1]) && PI_raw[1] > 0) {
-        PI_raw[0] = PI_raw[1];
+        PI_raw[0] = PI_raw[1]; // make first non-zero
       }
+
+      if (INT_raw.length >= 1) INT_raw[INT_raw.length - 1] = 0; // force last zero
+      if (PI_raw.length >= 1)  PI_raw[PI_raw.length - 1]  = 0; // force last zero
 
       payload.series.push({
         description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
@@ -776,11 +767,19 @@ function renderAllPlotsAndDiag(){
     diagBox.innerHTML = `<span class="ok">No issues yet.</span>`; return;
   }
 
-  const X = comp.__plot.CumOil || [];
-  const YintD = comp.__plot.InterceptDarcy || [];
+  // Raw series (possibly adjusted for first sample in Raw mode)
+  let X = comp.__plot.CumOil || [];
+  let YintD = (comp.__plot.InterceptDarcy || []).slice();
+  let Ypi   = (comp.__plot.PI || []).slice();
+
+  if (appMode === 'raw') {
+    if (YintD.length >= 2 && YintD[0] === 0 && Number.isFinite(YintD[1]) && YintD[1] > 0) YintD[0] = YintD[1]; // plot first ≠ 0
+    if (Ypi.length   >= 2 && Ypi[0]   === 0 && Number.isFinite(Ypi[1])   && Ypi[1]   > 0) Ypi[0]   = Ypi[1];   // plot first ≠ 0
+    // Note: do NOT force last to zero in plots.
+  }
+
   const YintA = comp.__plot.InterceptA || [];
-  const Ypi = comp.__plot.PI || [];
-  const YpiA = comp.__plot.PIA || [];
+  const YpiA  = comp.__plot.PIA || [];
 
   const ptsIntD = [], ptsIntA = [];
   const ptsPI = [], ptsPIA = [];
