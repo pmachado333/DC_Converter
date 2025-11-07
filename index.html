@@ -1,4 +1,3 @@
-<!-- /index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +5,7 @@
   <title>IXFM Decline Curve Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#3b82f6; --danger:#ef4444; --border:#1f2937; --slb:#003366; --warn:#f59e0b; }
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --brand:#22c55e; --accent:#3b82f6; --danger:#ef4444; --border:#1f2937; --slb:#003366; --amber:#eab308; }
     * { box-sizing:border-box }
     body { margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; background:var(--bg); color:var(--text) }
     header { padding:14px 16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; border-bottom:1px solid var(--border); position:sticky; top:0; background: linear-gradient(180deg, var(--slb) 0%, #012a52 100%); color:#fff; z-index:2; }
@@ -15,55 +14,41 @@
     .subtitle { font-size:12px; opacity:.9 }
     .btn { padding:8px 12px; border:1px solid rgba(255,255,255,.2); border-radius:10px; background:rgba(255,255,255,.06); color:#fff; cursor:pointer; font-weight:600; font-size:12px }
     .btn:hover { background:rgba(255,255,255,.1) }
+    .btn.brand { background:#16a34a; border-color:#0e7a34; color:#052e16 }
     .btn.danger { background:var(--danger); border-color:#991b1b; color:#fff }
     .btn.dark { background:#0b1220; border-color:#2a364d; color:#e5e7eb }
     .hint { color:#e5e7eb; opacity:.85; font-size:11px }
-
     .tabs { display:flex; flex-wrap:wrap; gap:6px; row-gap:8px; padding:10px 16px; margin-top:28px; border-bottom:1px solid var(--border); background:#0e1527; overflow:visible; }
     .tab { display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); background:var(--card); border-radius:10px; cursor:pointer; white-space:nowrap; font-size:12px }
     .tab.active { outline:2px solid var(--accent) }
     .tab input { background:transparent; color:#e5e7eb; border:none; width:120px; font-weight:600; font-size:12px }
     .tab .x { font-weight:800; color:#94a3b8; cursor:pointer }
-
     .wrap { padding:16px; display:flex; justify-content:center }
-    .container { width:100%; max-width:1180px; }
+    .container { width:100%; max-width:980px; }
     .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
-
-    .status { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; font-size:12px }
+    .controls { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; font-size:12px }
+    .right { display:flex; gap:8px; align-items:center; flex-wrap:wrap }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace }
-
-    .data-and-chart { display:grid; grid-template-columns: minmax(520px, 1fr) minmax(360px, 420px); gap:12px; align-items:start; }
-    @media (max-width: 980px){ .data-and-chart { grid-template-columns: 1fr } }
-
-    .leftpane { display:grid; grid-template-rows: auto auto 1fr; gap:8px; }
-    .controls-left { display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:#0b1220; border:1px solid var(--border); border-radius:10px; padding:6px 8px; }
-    .controls-left label { font-size:12px; color:#94a3b8 }
-    .controls-left input[type="number"] { width:72px; background:#0b1220; color:#e5e7eb; border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:12px }
-
-    .warnwrap { background: rgba(245, 158, 11, .08); border:1px solid rgba(245, 158, 11, .35); color:#fde68a; border-radius:10px; padding:6px 8px; font-size:12px; }
-    .warnwrap .title { color:#fbbf24; font-weight:700; font-size:12px; margin-bottom:4px }
-    .warnwrap ul { margin:0; padding-left:18px }
-    .warnwrap li { margin:2px 0 }
-
-    .tablewrap { --headRowH: 32px; overflow:auto; max-height:520px; border:1px solid var(--border); border-radius:10px }
+    .units { display:grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap:8px; margin:10px 0 6px }
+    .units label { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--muted) }
+    select, input[type="number"] { background:#0b1220; color:#e5e7eb; border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:12px }
+    input[type="number"] { width:72px }
     table { width:100%; border-collapse:collapse; table-layout:fixed }
-    col.time { width: 16% } col.press { width: 21% } col.press2 { width: 21% } col.rate { width: 14% } col.rate2 { width: 14% } col.rate3 { width: 14% }
-
-    thead th { position:sticky; background:#0b1220; z-index:2; padding:0 6px; border-bottom:1px solid #1f2937; }
-    thead tr:nth-child(1) th { top:0; height:var(--headRowH); line-height:var(--headRowH); font-weight:700; text-align:left; }
-    thead tr:nth-child(2) th { top:var(--headRowH); height:var(--headRowH); }
-    thead select { width:100%; background:#0b1220; color:#e5e7eb; border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:12px }
-    thead .label { font-size:12px; padding:0; margin:0 }
-
-    tbody td { border-bottom:1px solid #1f2937; padding:6px; text-align:left; vertical-align:top; font-size:12px; line-height:1.2 }
+    thead th { position:sticky; top:0; background:#0b1220; z-index:1 }
+    th,td { border:1px solid #1f2937; padding:6px; text-align:left; vertical-align:top; font-size:12px; line-height:1.2 }
     td[contenteditable="true"] { outline:none }
     td:focus { box-shadow: inset 0 0 0 2px var(--accent) }
-
-    .chartwrap { background:#0b1220; border:1px solid var(--border); border-radius:10px; padding:8px; }
-    .chartbar { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:6px; font-size:12px; color:#9ca3af }
-    .legend { display:flex; gap:12px; align-items:center; flex-wrap:wrap }
-    .litem { display:flex; align-items:center; gap:6px }
-    .dot { width:10px; height:10px; border-radius:50% }
+    .plot-title { font-size:12px; color:var(--muted); margin-bottom:8px }
+    .plot-wrap { width:100%; overflow:auto }
+    .plot-empty { font-size:12px; color:var(--muted); padding:8px }
+    .diag { font-size:12px; color:#eab308; }
+    .diag .ok { color:#22c55e }
+    .diag .bad { color:#f87171 }
+    .diag ul { margin:6px 0 0 18px; padding:0 }
+    .overlay-bar { display:flex; gap:12px; align-items:center; margin:8px 0 4px; font-size:12px; color:var(--muted) }
+    .legend { display:flex; gap:12px; align-items:center; margin-top:6px; font-size:11px; color:#cbd5e1 }
+    .legend .item { display:flex; gap:6px; align-items:center }
+    .chip { width:14px; height:3px; border-radius:2px; display:inline-block }
   </style>
 </head>
 <body>
@@ -73,7 +58,7 @@
       <div class="subtitle">Prototype Version</div>
     </div>
     <button class="btn dark" id="addWellBtn">+ Add Well</button>
-    <button class="btn dark" id="downloadBtn">Download JSON</button>
+    <button class="btn brand" id="downloadBtn">Download JSON</button>
     <button class="btn danger" id="deleteAllBtn">Delete All Wells</button>
     <span class="hint">Tip: paste from Excel; rows auto-expand.</span>
   </header>
@@ -83,585 +68,726 @@
   <div class="wrap">
     <div class="container">
       <div class="card">
-
-        <div class="status">
+        <div class="controls">
           <div class="mono">Active: <span id="activeWellName"></span></div>
-        </div>
-
-        <div class="data-and-chart">
-          <!-- LEFT PANE -->
-          <div class="leftpane">
-            <div class="controls-left">
-              <label>Copies</label>
-              <input id="copyCount" type="number" min="1" step="1" value="1" />
-              <button class="btn dark" id="duplicateBtn">Duplicate</button>
-              <button class="btn dark" id="clearDataBtn">Clear Data</button>
-              <button class="btn danger" id="deleteWellBtn">Delete Well</button>
-            </div>
-
-            <div class="warnwrap" id="warnWrap" style="display:none;">
-              <div class="title">Warnings (input & potential)</div>
-              <ul id="warnList"></ul>
-            </div>
-
-            <div class="tablewrap">
-              <table>
-                <colgroup>
-                  <col class="time" />
-                  <col class="press" />
-                  <col class="press2" />
-                  <col class="rate" />
-                  <col class="rate2" />
-                  <col class="rate3" />
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th><div class="label">Time</div></th>
-                    <th><div class="label">Well Block Pressure - 9P</div></th>
-                    <th><div class="label">Bottom-hole Pressure</div></th>
-                    <th><div class="label">Oil Rate</div></th>
-                    <th><div class="label">Gas Rate</div></th>
-                    <th><div class="label">Water Rate</div></th>
-                  </tr>
-                  <tr>
-                    <th>
-                      <select id="u_time">
-                        <option value="d">days</option>
-                        <option value="h">hours</option>
-                        <option value="mo30">months (30 d)</option>
-                        <option value="y365">years (365 d)</option>
-                      </select>
-                    </th>
-                    <th>
-                      <select id="u_bp">
-                        <option value="kpa">kPa</option>
-                        <option value="bar">bar</option>
-                        <option value="mpa">MPa</option>
-                        <option value="psi">psi</option>
-                      </select>
-                    </th>
-                    <th>
-                      <select id="u_bhp">
-                        <option value="kpa">kPa</option>
-                        <option value="bar">bar</option>
-                        <option value="mpa">MPa</option>
-                        <option value="psi">psi</option>
-                      </select>
-                    </th>
-                    <th>
-                      <select id="u_oil">
-                        <option value="m3d">m³/day</option>
-                        <option value="stbd">STB/day</option>
-                        <option value="m3h">m³/hour</option>
-                      </select>
-                    </th>
-                    <th>
-                      <select id="u_gas">
-                        <option value="m3d">m³/day</option>
-                        <option value="mscf">MSCF/day</option>
-                        <option value="mmscf">MMSCF/day</option>
-                      </select>
-                    </th>
-                    <th>
-                      <select id="u_wat">
-                        <option value="m3d">m³/day</option>
-                        <option value="stbd">STB/day</option>
-                        <option value="m3h">m³/hour</option>
-                      </select>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- RIGHT PANE -->
-          <div class="chartwrap">
-            <div class="chartbar">
-              <div>Preview: Potential vs Intercept (strict ↓)</div>
-              <div class="legend">
-                <div class="litem"><span class="dot" style="background:#6ee7b7"></span><span>Potential</span></div>
-                <div class="litem"><span class="dot" style="background:#93c5fd"></span><span>Intercept (fit)</span></div>
-              </div>
-            </div>
-            <canvas id="previewChart" height="300" style="width:100%"></canvas>
+          <div class="right">
+            <label class="hint">Copies</label>
+            <input id="copyCount" type="number" min="1" step="1" value="1" />
+            <button class="btn dark" id="duplicateBtn">Duplicate</button>
+            <button class="btn dark" id="clearDataBtn">Clear Data</button>
+            <button class="btn danger" id="deleteWellBtn">Delete Well</button>
           </div>
         </div>
 
+        <div class="units">
+          <label title="Time in days since start">
+            Time Unit
+            <select id="u_time">
+              <option value="d">days</option>
+              <option value="h">hours</option>
+              <option value="mo30">months (30 d)</option>
+              <option value="y365">years (365 d)</option>
+            </select>
+          </label>
+          <label title="WBP9: 9-point well-block average pressure near the well">
+            Block P Unit
+            <select id="u_bp">
+              <option value="kpa">kPa</option>
+              <option value="bar">bar</option>
+              <option value="mpa">MPa</option>
+              <option value="psi">psi</option>
+            </select>
+          </label>
+          <label title="WBHP: flowing bottom-hole pressure (reference depth)">
+            BHP Unit
+            <select id="u_bhp">
+              <option value="kpa">kPa</option>
+              <option value="bar">bar</option>
+              <option value="mpa">MPa</option>
+              <option value="psi">psi</option>
+            </select>
+          </label>
+          <label title="WOPR: oil production rate at surface conditions">
+            Oil Rate Unit
+            <select id="u_oil">
+              <option value="m3d">m³/day</option>
+              <option value="stbd">STB/day</option>
+              <option value="m3h">m³/hour</option>
+            </select>
+          </label>
+          <label title="WGPR: gas production rate at surface conditions">
+            Gas Rate Unit
+            <select id="u_gas">
+              <option value="m3d">m³/day</option>
+              <option value="mscf">MSCF/day</option>
+              <option value="mmscf">MMSCF/day</option>
+            </select>
+          </label>
+          <label title="WWPR: water production rate at surface conditions">
+            Water Rate Unit
+            <select id="u_wat">
+              <option value="m3d">m³/day</option>
+              <option value="stbd">STB/day</option>
+              <option value="m3h">m³/hour</option>
+            </select>
+          </label>
+        </div>
+
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th title="Time in days since start">Time</th>
+                <th title="WBP9: well-block pressure near the well">Well Block Pressure - 9P</th>
+                <th title="WBHP: flowing bottom-hole pressure">Bottom-hole Pressure</th>
+                <th title="WOPR: oil production rate (surface)">Oil Rate</th>
+                <th title="WGPR: gas production rate (surface)">Gas Rate</th>
+                <th title="WWPR: water production rate (surface)">Water Rate</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="overlay-bar mono">
+          <label><input type="checkbox" id="overlayVogel"> Overlay Vogel IPR (nonlinear)</label>
+          <span class="hint">Export & diagnostics remain Darcy-based.</span>
+        </div>
+        <div class="legend mono">
+          <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
+          <div class="item"><span class="chip" style="background:#a78bfa"></span>Reconstructed (TLS)</div>
+          <div class="item"><span class="chip" style="background:#22c55e"></span>Vogel (overlay)</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="plot-title mono">Intercept (q @ pwf=0) vs Days — STB/d</div>
+        <div class="plot-wrap">
+          <svg id="plotIntercept" width="100%" height="280" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
+          <div id="emptyIntercept" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="plot-title mono">IPR (Productivity Index) vs Days — (STB/d)/psi</div>
+        <div class="plot-wrap">
+          <svg id="plotPI" width="100%" height="280" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
+          <div id="emptyPI" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="plot-title mono">IPR vs Intercept — Scatter (raw vs TLS recon)</div>
+        <div class="plot-wrap">
+          <svg id="plotPIvsInt" width="100%" height="300" viewBox="0 0 900 300" preserveAspectRatio="none"></svg>
+          <div id="emptyPIvsInt" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="plot-title mono">Diagnostics — Sanity Checks (Darcy IPR)</div>
+        <div class="diag" id="diagBox">
+          <span class="ok">No issues yet.</span>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
-/** ===== constants / state ===== */
-const WELL_COLS=["Time","Well Block Pressure - 9P","Bottom-hole Pressure","Oil Rate","Gas Rate","Water Rate"];
-const SERIES_META={
-  OIL_PRODUCTION_CUML:{description:"Oil production cumulative rate",displayUnit:"STB",measurementID:"Liquid_Production_Volume"},
-  GAS_OIL_RATIO:{description:"Gas Oil Ratio",displayUnit:"MSCF/STB",measurementID:"Gas_To_Liquid_Ratio"},
-  WATER_CUT:{description:"Water Cut",displayUnit:"STB/STB",measurementID:"Liquid_To_Liquid_Ratio"},
-  INTERCEPT_OIL_PHASE_IPR_REF_DEPTH:{description:"Oil phase IPR intercept",displayUnit:"STB/d",measurementID:"Liquid_Flowrate"},
-  SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH:{description:"Oil phase IPR scaling factor",displayUnit:"STB/d",measurementID:"Liquid_Productivity_Index"}
+/** Constants & state */
+const WELL_COLS = ["Time","Well Block Pressure - 9P","Bottom-hole Pressure","Oil Rate","Gas Rate","Water Rate"];
+const SERIES_META = {
+  OIL_PRODUCTION_CUML: { description:"Oil production cumulative rate", displayUnit:"STB", measurementID:"Liquid_Production_Volume" },
+  GAS_OIL_RATIO: { description:"Gas Oil Ratio", displayUnit:"MSCF/STB", measurementID:"Gas_To_Liquid_Ratio" },
+  WATER_CUT: { description:"Water Cut", displayUnit:"STB/STB", measurementID:"Liquid_To_Liquid_Ratio" },
+  INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR intercept", displayUnit:"STB/d", measurementID:"Liquid_Flowrate" },
+  SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR scaling factor (PI)", displayUnit:"(STB/d)/psi", measurementID:"Liquid_Productivity_Index" }
 };
-const M3_TO_STB=6.28981077, STB_TO_M3=1/M3_TO_STB, M3_TO_MMSCF=0.0000353146667;
-const PSI_TO_KPA=6.894757293168, BAR_TO_KPA=100.0, MPA_TO_KPA=1000.0;
+const M3_TO_STB = 6.28981077;
+const STB_TO_M3 = 1 / M3_TO_STB;
+const M3_TO_MMSCF = 0.0000353146667;
+const PSI_TO_KPA = 6.894757293168;
+const BAR_TO_KPA = 100.0;
+const MPA_TO_KPA = 1000.0;
 
-const DP_MIN_PSI = 25;         // floor to avoid blow-ups
-const SUSPECT_MAX = 150000;    // scale warning upper band
-const SUSPECT_MIN = 500;       // scale warning lower band
+let wells = [];
+let activeWellId = null;
 
-let wells=[], activeWellId=null;
+/** DOM refs */
+const tabsEl = document.getElementById('tabs');
+const bodyEl = document.getElementById('tableBody');
+const addWellBtn = document.getElementById('addWellBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const deleteAllBtn = document.getElementById('deleteAllBtn');
+const deleteWellBtn = document.getElementById('deleteWellBtn');
+const clearDataBtn = document.getElementById('clearDataBtn');
+const duplicateBtn = document.getElementById('duplicateBtn');
+const copyCountInput = document.getElementById('copyCount');
+const activeWellNameEl = document.getElementById('activeWellName');
+const u_time = document.getElementById('u_time');
+const u_bp = document.getElementById('u_bp');
+const u_bhp = document.getElementById('u_bhp');
+const u_oil = document.getElementById('u_oil');
+const u_gas = document.getElementById('u_gas');
+const u_wat = document.getElementById('u_wat');
+const svgIntercept = document.getElementById('plotIntercept');
+const svgPI = document.getElementById('plotPI');
+const svgPIvsInt = document.getElementById('plotPIvsInt');
+const emptyIntercept = document.getElementById('emptyIntercept');
+const emptyPI = document.getElementById('emptyPI');
+const emptyPIvsInt = document.getElementById('emptyPIvsInt');
+const diagBox = document.getElementById('diagBox');
+const overlayVogel = document.getElementById('overlayVogel');
 
-/** ===== DOM ===== */
-const tabsEl=document.getElementById('tabs');
-const bodyEl=document.getElementById('tableBody');
-const addWellBtn=document.getElementById('addWellBtn');
-const downloadBtn=document.getElementById('downloadBtn');
-const deleteAllBtn=document.getElementById('deleteAllBtn');
-const deleteWellBtn=document.getElementById('deleteWellBtn');
-const clearDataBtn=document.getElementById('clearDataBtn');
-const duplicateBtn=document.getElementById('duplicateBtn');
-const copyCountInput=document.getElementById('copyCount');
-const activeWellNameEl=document.getElementById('activeWellName');
-const canvas=document.getElementById('previewChart');
-const warnWrap=document.getElementById('warnWrap');
-const warnList=document.getElementById('warnList');
-
-/** ===== helpers ===== */
-const uuid=()=>Math.random().toString(36).slice(2,9);
-const toNumber=v=>{ if(typeof v==='number') return v; if(v==null) return NaN; const s=String(v).trim().replace(/,/g,''); if(s==='') return NaN; const n=Number(s); return Number.isFinite(n)?n:NaN; };
-const isMostlyNonNumericRow=row=>row.map(toNumber).filter(Number.isFinite).length<=2;
-
-/** fuzzy header mapping */
-const HEADER_ALIASES={
-  "Time":[/^time\b/i,/\bday\b/i],
-  "Well Block Pressure - 9P":[/\bblock\b.*\bpressure\b/i,/\bwbp9\b/i,/\b9p\b/i],
-  "Bottom-hole Pressure":[/\bbottom.*hole.*pressure\b/i,/\bbhp\b/i],
-  "Oil Rate":[/\boil\b.*\brate\b/i,/\bwopr\b/i,/\bopr\b/i],
-  "Gas Rate":[/\bgas\b.*\brate\b/i,/\bwgpr\b/i,/\bgpr\b/i,/\bmscf\b/i,/\bmmscf\b/i],
-  "Water Rate":[/\bwater\b.*\brate\b/i,/\bwwpr\b/i,/\bwpr\b/i]
+/** Helpers */
+const uuid = () => Math.random().toString(36).slice(2,9);
+const toNumber = v => {
+  if (typeof v === 'number') return v;
+  if (v == null) return NaN;
+  const s = String(v).trim().replace(/,/g,'');
+  if (s === '') return NaN;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
 };
-function buildHeaderMap(headerCells){
-  const map=Array(WELL_COLS.length).fill(-1);
-  const cells=headerCells.map(c=>String(c||'').trim().toLowerCase());
-  cells.forEach((h,srcIdx)=>{
-    for(let dst=0;dst<WELL_COLS.length;dst++){
-      const pats=HEADER_ALIASES[WELL_COLS[dst]];
-      if(pats && pats.some(rx=>rx.test(h))) if(map[dst]===-1) map[dst]=srcIdx;
-    }
-  });
-  const required=["Time","Well Block Pressure - 9P","Bottom-hole Pressure","Oil Rate"];
-  const ok=required.every(name=>map[WELL_COLS.indexOf(name)]!==-1);
-  return ok?map:null;
+const isMostlyNonNumericRow = row => row.map(toNumber).filter(Number.isFinite).length <= 2;
+function ensureRows(well, rowsNeeded) { const add = Math.max(0, rowsNeeded - well.tableData.length); for (let i=0;i<add;i++) well.tableData.push(Array(WELL_COLS.length).fill('')); return add; }
+function isWellEmpty(well) { for (const row of well.tableData) for (const cell of row) if (String(cell ?? '').trim() !== '') return false; return true; }
+function nextAvailableWellName() {
+  const used = new Set(); for (const w of wells) { const m = /^P(\d+)$/.exec(w.name.trim()); if (m) used.add(Number(m[1])); }
+  let n = 1; while (used.has(n)) n++; return `P${n}`;
 }
 
-/** rows/wells */
-function ensureRows(well,rows){ const add=Math.max(0,rows-well.tableData.length); for(let i=0;i<add;i++) well.tableData.push(Array(WELL_COLS.length).fill('')); return add; }
-function isWellEmpty(well){ for(const row of well.tableData) for(const cell of row) if(String(cell??'').trim()!=='') return false; return true; }
-function nextAvailableWellName(){ const used=new Set(); for(const w of wells){ const m=/^P(\d+)$/.exec(w.name.trim()); if(m) used.add(Number(m[1])); } let n=1; while(used.has(n)) n++; return `P${n}`; }
-function defaultUnits(){ return {time:'d',bp:'kpa',bhp:'kpa',oil:'m3d',gas:'m3d',wat:'m3d'}; }
-function createWell(name){ return {id:uuid(), name, units:defaultUnits(), tableData:Array.from({length:30},()=>Array(WELL_COLS.length).fill(''))}; }
-function addWell(initialName){ const name=initialName??`P${wells.length+1}`; const well=createWell(name); wells.push(well); setActiveWell(well.id); renderTabs(); renderTable(); renderUnits(); updatePreview(); }
-function deleteWell(id){ wells=wells.filter(w=>w.id!==id); if(!wells.length) addWell('P1'); setActiveWell(wells[0].id); renderTabs(); renderTable(); renderUnits(); updatePreview(); }
-function deleteWellWithMaybeConfirm(id){ const w=wells.find(x=>x.id===id); if(!w) return; if(isWellEmpty(w)) deleteWell(id); else if(confirm(`Delete well "${w.name}"?`)) deleteWell(id); }
-function resetAllWells(){ wells=[]; addWell('P1'); }
-function setActiveWell(id){ activeWellId=id; activeWellNameEl.textContent=wells.find(w=>w.id===id)?.name??''; updatePreview(); }
-function renameWell(id,newName){ const w=wells.find(x=>x.id===id); if(!w) return; w.name=newName.trim()||w.name; if(id===activeWellId) activeWellNameEl.textContent=w.name; }
+/** Units */
+function factorTimeToDays(code){ switch(code){ case 'd': return 1; case 'h': return 1/24; case 'mo30': return 30; case 'y365': return 365; default: return 1; } }
+function factorPressureToKPa(code){ switch(code){ case 'kpa': return 1; case 'bar': return BAR_TO_KPA; case 'mpa': return MPA_TO_KPA; case 'psi': return PSI_TO_KPA; default: return 1; } }
+function factorOilWaterToM3d(code){ switch(code){ case 'm3d': return 1; case 'stbd': return STB_TO_M3; case 'm3h': return 24; default: return 1; } }
+function factorGasToM3d(code){ switch(code){ case 'm3d': return 1; case 'mscf': return 28.316846592; case 'mmscf': return 28316.846592; default: return 1; } }
+function applyFactorArray(arr, factor){ return arr.map(v => Number.isFinite(v) ? v*factor : NaN); }
 
-/** table */
-function renderTabs(){ tabsEl.innerHTML=''; wells.forEach(w=>{ const tab=document.createElement('div'); tab.className='tab'+(w.id===activeWellId?' active':''); tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); }; const input=document.createElement('input'); input.value=w.name; input.oninput=e=>renameWell(w.id,e.target.value); const close=document.createElement('span'); close.className='x'; close.textContent='×'; close.onclick=ev=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); }; tab.appendChild(input); tab.appendChild(close); tabsEl.appendChild(tab); }); }
-function renderTable(){ const w=wells.find(x=>x.id===activeWellId); if(!w) return; bodyEl.innerHTML=''; w.tableData.forEach((row,r)=>{ const tr=document.createElement('tr'); for(let c=0;c<WELL_COLS.length;c++){ const td=document.createElement('td'); td.contentEditable='true'; td.spellcheck=false; td.dataset.row=r; td.dataset.col=c; td.textContent=row[c]??''; td.addEventListener('input',onCellInput); td.addEventListener('paste',onCellPaste); tr.appendChild(td); } bodyEl.appendChild(tr); }); bindUnitControls(); }
-function onCellInput(e){ const td=e.currentTarget; const r=+td.dataset.row,c=+td.dataset.col; const w=wells.find(x=>x.id===activeWellId); w.tableData[r][c]=td.textContent; updatePreview(); }
+/** Tabs & wells */
+function defaultUnits(){ return { time:'d', bp:'kpa', bhp:'kpa', oil:'m3d', gas:'m3d', wat:'m3d' }; }
+function createWell(name){ return { id: uuid(), name, units: defaultUnits(), tableData: Array.from({length:30}, () => Array(WELL_COLS.length).fill('')) }; }
+function addWell(initialName) { const name = initialName ?? `P${wells.length+1}`; const well = createWell(name); wells.push(well); setActiveWell(well.id); renderTabs(); renderTable(); renderUnits(); renderAllPlotsAndDiag(); }
+function deleteWell(id) { wells = wells.filter(w=>w.id!==id); if (!wells.length) addWell('P1'); setActiveWell(wells[0].id); renderTabs(); renderTable(); renderUnits(); renderAllPlotsAndDiag(); }
+function deleteWellWithMaybeConfirm(id) { const w = wells.find(x=>x.id===id); if (!w) return; if (isWellEmpty(w)) { deleteWell(id); } else { if (confirm(`Delete well "${w.name}"?`)) deleteWell(id); } }
+function resetAllWells() { wells = []; addWell('P1'); }
+function setActiveWell(id) { activeWellId = id; activeWellNameEl.textContent = wells.find(w=>w.id===id)?.name ?? ''; }
+function renameWell(id,newName) { const w = wells.find(x=>x.id===id); if (!w) return; w.name = newName.trim() || w.name; if (id===activeWellId) activeWellNameEl.textContent = w.name; }
+function renderTabs() {
+  tabsEl.innerHTML = '';
+  wells.forEach(w=>{
+    const tab=document.createElement('div');
+    tab.className='tab'+(w.id===activeWellId?' active':''); 
+    tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); renderAllPlotsAndDiag(); };
+    const input=document.createElement('input'); input.value=w.name; input.oninput=e=>renameWell(w.id,e.target.value);
+    const close=document.createElement('span'); close.className='x'; close.textContent='×'; close.onclick=(ev)=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); };
+    tab.appendChild(input); tab.appendChild(close); tabsEl.appendChild(tab);
+  });
+}
+
+/** Table */
+function renderTable() {
+  const w = wells.find(x=>x.id===activeWellId); if (!w) return;
+  bodyEl.innerHTML='';
+  w.tableData.forEach((row,r)=>{
+    const tr=document.createElement('tr');
+    for (let c=0;c<WELL_COLS.length;c++){
+      const td=document.createElement('td');
+      td.contentEditable='true'; td.spellcheck=false;
+      td.dataset.row=r; td.dataset.col=c;
+      td.textContent=row[c] ?? '';
+      td.addEventListener('input', onCellInput);
+      td.addEventListener('paste', onCellPaste);
+      tr.appendChild(td);
+    }
+    bodyEl.appendChild(tr);
+  });
+}
+function onCellInput(e){
+  const td=e.currentTarget; const r=+td.dataset.row, c=+td.dataset.col;
+  const w=wells.find(x=>x.id===activeWellId);
+  w.tableData[r][c]=td.textContent;
+  renderAllPlotsAndDiag();
+}
 function onCellPaste(e){
   e.preventDefault();
-  const td=e.currentTarget, startR=+td.dataset.row, startC=+td.dataset.col;
+  const td=e.currentTarget; const startR=+td.dataset.row, startC=+td.dataset.col;
   const raw=(e.clipboardData||window.clipboardData).getData('text');
   const lines=raw.replace(/\r/g,'').split('\n').filter(Boolean).map(l=>l.split('\t'));
-  if(!lines.length) return;
-  const headerRow=lines[0], hasHeader=isMostlyNonNumericRow(headerRow);
-  const headerMap=hasHeader?buildHeaderMap(headerRow):null;
-  let payload;
-  if(headerMap){ payload=lines.slice(1).map(row=>headerMap.map(idx=>(idx>=0&&row[idx]!=null)?row[idx]:'')); }
-  else{ payload=hasHeader?lines.slice(1):lines; }
+  if (!lines.length) return;
+  const payload=isMostlyNonNumericRow(lines[0])?lines.slice(1):lines;
   const w=wells.find(x=>x.id===activeWellId);
-  const added=ensureRows(w,startR+payload.length); if(added>0) renderTable();
-  const startC0=headerMap?0:startC;
-  for(let i=0;i<payload.length;i++){ const cols=payload[i]; for(let j=0;j<cols.length && (startC0+j)<WELL_COLS.length;j++){ const r=startR+i,c=startC0+j; w.tableData[r][c]=cols[j]; const cell=bodyEl.querySelector(`td[data-row="${r}"][data-col="${c}"]`); if(cell) cell.textContent=cols[j]; } }
-  updatePreview();
+  const added=ensureRows(w, startR+payload.length);
+  if (added>0) renderTable();
+  for (let i=0;i<payload.length;i++){
+    const cols=payload[i];
+    for (let j=0;j<cols.length && (startC+j)<WELL_COLS.length;j++){
+      const r=startR+i, c=startC+j;
+      w.tableData[r][c]=cols[j];
+      const cell=bodyEl.querySelector(`td[data-row="${r}"][data-col="${c}"]`);
+      if (cell) cell.textContent=cols[j];
+    }
+  }
+  renderAllPlotsAndDiag();
 }
 
-/** units in header */
-function renderUnits(){
-  const w=wells.find(x=>x.id===activeWellId); if(!w) return;
-  const sel=(id,val)=>{ const el=document.getElementById(id); if(el) el.value=val; };
-  sel('u_time', w.units.time); sel('u_bp', w.units.bp); sel('u_bhp', w.units.bhp);
-  sel('u_oil', w.units.oil); sel('u_gas', w.units.gas); sel('u_wat', w.units.wat);
-}
-function bindUnitControls(){
-  const w=wells.find(x=>x.id===activeWellId); if(!w) return;
-  const handle=()=>{ const ww=wells.find(x=>x.id===activeWellId); if(!ww) return;
-    ww.units={
-      time:document.getElementById('u_time')?.value||ww.units.time,
-      bp:document.getElementById('u_bp')?.value||ww.units.bp,
-      bhp:document.getElementById('u_bhp')?.value||ww.units.bhp,
-      oil:document.getElementById('u_oil')?.value||ww.units.oil,
-      gas:document.getElementById('u_gas')?.value||ww.units.gas,
-      wat:document.getElementById('u_wat')?.value||ww.units.wat,
-    };
-    updatePreview();
-  };
-  ['u_time','u_bp','u_bhp','u_oil','u_gas','u_wat'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el && !el.dataset.bound){ el.addEventListener('change',handle); el.dataset.bound='1'; }
-  });
-  renderUnits();
-}
-
-/** math helpers */
+/** Math utils */
 function safeDiv(a,b){ return (Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(b)>0)?(a/b):NaN; }
-function cumsum(arr){ const out=[]; let s=0; for(const v of arr){ const x=Number.isFinite(v)?v:0; s+=x; out.push(s); } return out; }
-function countMonoUps(arr){ let v=0; for(let i=1;i<arr.length;i++) if(Number.isFinite(arr[i-1])&&Number.isFinite(arr[i])&&arr[i-1]<=arr[i]) v++; return v; }
+function cumsum(arr){ const out=[]; let s=0; for (const v of arr){ const x=Number.isFinite(v)?v:0; s+=x; out.push(s) } return out; }
+const clamp01 = (x)=> Math.max(0, Math.min(1, x));
 
-/** weighted isotonic (non-increasing, ≥0, last=0) */
-function isotonicFitNonIncreasing(yInput, wInput){
-  const n=yInput.length; if(n===0) return [];
-  const y=yInput.slice(); const w=wInput.slice();
-  y[n-1]=0; w[n-1]=(w[n-1]||0)+1e9; // anchor 0
-  const blocks=[];
-  for(let i=0;i<n;i++){
-    let wi=(Number.isFinite(w[i])?w[i]:0);
-    let yi=(Number.isFinite(w[i])&&Number.isFinite(y[i]))?w[i]*y[i]:0;
-    let len=1, avg=wi>0?yi/wi:0;
-    blocks.push({sumW:wi,sumYW:yi,len,avg});
-    while(blocks.length>=2 && blocks[blocks.length-2].avg < blocks[blocks.length-1].avg){
-      const b=blocks.pop(), a=blocks.pop();
-      const sumW=a.sumW+b.sumW, sumYW=a.sumYW+b.sumYW, len2=a.len+b.len;
-      const avg2=sumW>0?sumYW/sumW:0;
-      blocks.push({sumW, sumYW, len:len2, avg:avg2});
+/** TLS fit helpers */
+function tlsFit(xs, ys){
+  const n = xs.length;
+  if (n < 2) return null;
+  let mx=0, my=0;
+  for (let i=0;i<n;i++){ mx += xs[i]; my += ys[i]; }
+  mx /= n; my /= n;
+  let sxx=0, syy=0, sxy=0;
+  for (let i=0;i<n;i++){
+    const dx = xs[i]-mx, dy = ys[i]-my;
+    sxx += dx*dx; syy += dy*dy; sxy += dx*dy;
+  }
+  sxx /= n; syy /= n; sxy /= n;
+  const theta = 0.5 * Math.atan2(2*sxy, sxx - syy);
+  const ux = Math.cos(theta), uy = Math.sin(theta);
+  return { mx, my, ux, uy };
+}
+function tlsProjectPoint(fit, x, y){
+  const dx = x - fit.mx, dy = y - fit.my;
+  const t = fit.ux*dx + fit.uy*dy;
+  return [ fit.mx + t*fit.ux, fit.my + t*fit.uy ];
+}
+function tlsYgivenX(fit, x){
+  const EPS = 1e-12;
+  if (!fit) return NaN;
+  if (Math.abs(fit.ux) < EPS) return fit.my; // vertical: fallback
+  const m = fit.uy / fit.ux;
+  const b = fit.my - m*fit.mx;
+  return m*x + b;
+}
+
+/** Core computation */
+function computeWellSeriesPhysical(well){
+  const data = well.tableData;
+  const DAYS_raw = data.map(r=>toNumber(r[0]));
+  const BP_raw   = data.map(r=>toNumber(r[1]));
+  const BHP_raw  = data.map(r=>toNumber(r[2]));
+  const OIL_raw  = data.map(r=>toNumber(r[3]));
+  const GAS_raw  = data.map(r=>toNumber(r[4]));
+  const WAT_raw  = data.map(r=>toNumber(r[5]));
+
+  let L = DAYS_raw.length;
+  for (; L>0; L--){
+    const i=L-1;
+    if ([DAYS_raw[i],BP_raw[i],BHP_raw[i],OIL_raw[i],GAS_raw[i],WAT_raw[i]].some(v=>Number.isFinite(v))) break;
+  }
+  if (L===0) return null;
+
+  const fTime = factorTimeToDays(well.units.time);
+  const fBP = factorPressureToKPa(well.units.bp);
+  const fBHP = factorPressureToKPa(well.units.bhp);
+  const fOil = factorOilWaterToM3d(well.units.oil);
+  const fGas = factorGasToM3d(well.units.gas);
+  const fWat = factorOilWaterToM3d(well.units.wat);
+
+  const Days = applyFactorArray(DAYS_raw.slice(0,L), fTime);
+  const BP_kPa = applyFactorArray(BP_raw.slice(0,L), fBP);
+  const BHP_kPa = applyFactorArray(BHP_raw.slice(0,L), fBHP);
+  const OIL_m3d = applyFactorArray(OIL_raw.slice(0,L), fOil);
+  const GAS_m3d = applyFactorArray(GAS_raw.slice(0,L), fGas);
+  const WAT_m3d = applyFactorArray(WAT_raw.slice(0,L), fWat);
+
+  const oil_stb = OIL_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*6.28981077) : NaN);
+  const wat_stb = WAT_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*6.28981077) : NaN);
+  const gas_mmscf = GAS_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*0.0000353146667) : NaN);
+  const BP_psi = BP_kPa.map(v=>Number.isFinite(v)? v/6.894757293168 : NaN);
+  const BHP_psi = BHP_kPa.map(v=>Number.isFinite(v)? v/6.894757293168 : NaN);
+
+  const GOR = oil_stb.map((o,i)=>safeDiv(gas_mmscf[i], o));
+  const WATER_FRAC = oil_stb.map((o,i)=>{
+    const w = wat_stb[i];
+    const denom = (Number.isFinite(o)?o:0) + (Number.isFinite(w)?w:0);
+    return denom > 0 ? safeDiv(w, denom) : NaN;
+  });
+
+  const dDays = Days.map(v=>Number.isFinite(v)?v:0);
+  for (let i=dDays.length-1;i>=1;i--) dDays[i] = (Number.isFinite(Days[i])?Days[i]:0) - (Number.isFinite(Days[i-1])?Days[i-1]:0);
+  const oilVolPerDate = oil_stb.map((q,i)=>(Number.isFinite(q)?q:0) * (Number.isFinite(dDays[i])?dDays[i]:0));
+  const CumOil = cumsum(oilVolPerDate);
+
+  const dP = BP_psi.map((bp,i)=>{
+    const pwf = BHP_psi[i];
+    return (Number.isFinite(bp) && Number.isFinite(pwf)) ? Math.max(0, bp - pwf) : NaN;
+  });
+
+  let PI = oil_stb.map((q,i)=> {
+    const dp = dP[i];
+    const val = safeDiv(q, dp);
+    return Number.isFinite(val) ? Math.max(0, val) : NaN;
+  });
+  if (PI.length >= 2 && !Number.isFinite(PI[0]) && Number.isFinite(PI[1])) PI[0] = PI[1];
+
+  let INTERCEPT_DARCY = PI.map((pi,i)=>{
+    const bp = BP_psi[i];
+    const val = (Number.isFinite(pi) && Number.isFinite(bp)) ? (pi * bp) : NaN;
+    return Number.isFinite(val) ? Math.max(0, val) : NaN;
+  });
+  if (INTERCEPT_DARCY.length>=2 && !Number.isFinite(INTERCEPT_DARCY[0]) && Number.isFinite(INTERCEPT_DARCY[1])) {
+    INTERCEPT_DARCY[0] = INTERCEPT_DARCY[1];
+  }
+
+  // Vogel overlay (optional)
+  let INTERCEPT_VOGEL = oil_stb.map((q,i)=>{
+    const pr = BP_psi[i]; const pwf = BHP_psi[i];
+    if (!Number.isFinite(q) || !Number.isFinite(pr) || pr<=0) return NaN;
+    const x = clamp01(Number.isFinite(pwf)? pwf/pr : NaN);
+    const denom = 1 - 0.2*x - 0.8*x*x;
+    if (!(denom>0)) return NaN;
+    const qmax = q / denom;
+    return Number.isFinite(qmax) ? Math.max(0, qmax) : NaN;
+  });
+
+  // === TLS: fit relation between Intercept (x) and PI (y) ===
+  const EPS_Q = 1e-9, EPS_DP = 1e-6;
+  const fitXs = [], fitYs = [];
+  for (let i=0;i<L;i++){
+    const xi = INTERCEPT_DARCY[i];
+    const yi = PI[i];
+    if (!Number.isFinite(xi) || !Number.isFinite(yi)) continue;
+    const q = oil_stb[i];
+    const dp = dP[i];
+    if (i===0 && Number.isFinite(q) && Math.abs(q) <= EPS_Q) continue; // exclude first-row zero-flow from fit
+    if (Number.isFinite(dp) && Math.abs(dp) <= EPS_DP) continue;       // exclude unstable Δp
+    fitXs.push(xi);
+    fitYs.push(yi);
+  }
+  let fit = null;
+  if (fitXs.length >= 2) fit = tlsFit(fitXs, fitYs);
+
+  // Reconstruct: orthogonal projection for all rows.
+  // Special case for i=0 with q≈0: keep Intercept raw, compute PI from y=f(x) on the TLS line.
+  let INTERCEPT_TLS = INTERCEPT_DARCY.slice();
+  let PI_TLS = PI.slice();
+  if (fit){
+    // Project all except potential first-row zero-flow special case
+    for (let i=0;i<L;i++){
+      const xi = INTERCEPT_DARCY[i];
+      const yi = PI[i];
+      if (!Number.isFinite(xi) || !Number.isFinite(yi)) continue;
+      if (i===0 && Number.isFinite(oil_stb[0]) && Math.abs(oil_stb[0])<=EPS_Q) continue; // handle after loop
+      const pr = tlsProjectPoint(fit, xi, yi);
+      INTERCEPT_TLS[i] = pr[0];
+      PI_TLS[i] = pr[1];
+    }
+    // Now set first row to TLS maxima if q0≈0
+    if (Number.isFinite(oil_stb[0]) && Math.abs(oil_stb[0])<=EPS_Q){
+      const xs = INTERCEPT_TLS.filter(Number.isFinite);
+      const xMax = xs.length ? Math.max.apply(null, xs) : INTERCEPT_DARCY[0];
+      const yAtXmax = tlsYgivenX(fit, xMax);
+      if (Number.isFinite(xMax)) INTERCEPT_TLS[0] = xMax;
+      if (Number.isFinite(yAtXmax)) PI_TLS[0] = Math.max(0, yAtXmax);
     }
   }
-  const out=new Array(n); let idx=0;
-  for(const b of blocks){ const v=Math.max(0,b.avg); for(let k=0;k<b.len;k++) out[idx++]=v; }
-  out[n-1]=0;
-  for(let i=n-2;i>=0;i--) if(out[i]<out[i+1]) out[i]=out[i+1];
-  return out;
-}
-/** strict monotone post-process (y[i] > y[i+1]) */
-function makeStrictlyDecreasing(y){
-  const n=y.length; if(n===0) return [];
-  const yMax=Math.max(...y.filter(Number.isFinite), 0);
-  const eps=Math.max(1e-12, yMax/(n*1e6)); // tiny, scale-aware
-  const out=y.map((v,i)=>Number.isFinite(v)?(v + eps*(n-1-i)):NaN);
-  if(n) out[n-1]=0;
-  for(let i=n-2;i>=0;i--) if(Number.isFinite(out[i])&&Number.isFinite(out[i+1])&&!(out[i]>out[i+1])) out[i]=out[i+1]+eps;
-  return out;
-}
 
-/** pre-process: sort by time & collapse duplicate timestamps */
-function preprocessRows(table) {
-  const rows = table.map(r=>r.slice()).filter(r=>r.some(v=>Number.isFinite(toNumber(v))));
-  const byT = new Map();
-  for (const r of rows) {
-    const t = toNumber(r[0]);
-    if (!Number.isFinite(t)) continue;
-    const cur = byT.get(t);
-    if (!cur) byT.set(t, {cnt:1, vals:r.map(toNumber)});
-    else {
-      cur.cnt++; // light avg for pressures; prefer latest for rates
-      for (let i=1;i<r.length;i++){
-        const v=toNumber(r[i]);
-        if (!Number.isFinite(v)) continue;
-        if (i===1||i===2) { // pressures: average
-          const prev=cur.vals[i]; cur.vals[i]=Number.isFinite(prev)?0.5*(prev+v):v;
-        } else { // rates: latest
-          cur.vals[i]=v;
-        }
-      }
-    }
-  }
-  return [...byT.entries()].sort((a,b)=>a[0]-b[0]).map(([t,o])=>{ const arr=o.vals.map(v=>Number.isFinite(v)?v:NaN); arr[0]=t; return arr; });
-}
+  // For export, sanitize; for plots, keep raw NaNs to avoid fake zeros.
+  const sanitize = a => a.map(v=>Number.isFinite(v)?v:0);
 
-/** conversions */
-function factorTimeToDays(code){ switch(code){ case 'd':return 1; case 'h':return 1/24; case 'mo30':return 30; case 'y365':return 365; default:return 1; } }
-function factorPressureToKPa(code){ switch(code){ case 'kpa':return 1; case 'bar':return BAR_TO_KPA; case 'mpa':return MPA_TO_KPA; case 'psi':return PSI_TO_KPA; default:return 1; } }
-function factorOilWaterToM3d(code){ switch(code){ case 'm3d':return 1; case 'stbd':return STB_TO_M3; case 'm3h':return 24; default:return 1; } }
-function factorGasToM3d(code){ switch(code){ case 'm3d':return 1; case 'mscf':return 28.316846592; case 'mmscf':return 28316.846592; default:return 1; } }
-function applyFactorArray(arr,f){ return arr.map(v=>Number.isFinite(v)?v*f:NaN); }
-
-/** ===== core pipeline with warnings ===== */
-function computeCore(well){
-  const rows = preprocessRows(well.tableData);
-  if(!rows.length) return null;
-
-  const T_raw = rows.map(r=>toNumber(r[0]));
-  const BP_raw= rows.map(r=>toNumber(r[1]));
-  const BHP_raw=rows.map(r=>toNumber(r[2]));
-  const OIL_raw=rows.map(r=>toNumber(r[3]));
-  const GAS_raw=rows.map(r=>toNumber(r[4]));
-  const WAT_raw=rows.map(r=>toNumber(r[5]));
-  const L=T_raw.length;
-
-  // Δt from raw time (will be scaled to days)
-  const DeltaT_raw=new Array(L).fill(0);
-  for(let i=1;i<L;i++){ const dt=T_raw[i]-T_raw[i-1]; DeltaT_raw[i]=Number.isFinite(dt)&&dt>0?dt:0; }
-  DeltaT_raw[0]=DeltaT_raw[1]||0;
-
-  // Conversions using selected units ONLY (no auto-correction)
-  const fTime=factorTimeToDays(well.units.time);
-  const fBP=factorPressureToKPa(well.units.bp);
-  const fBHP=factorPressureToKPa(well.units.bhp);
-  const fOil=factorOilWaterToM3d(well.units.oil);
-  const fGas=factorGasToM3d(well.units.gas);
-  const fWat=factorOilWaterToM3d(well.units.wat);
-
-  const Days=T_raw.map(v=>Number.isFinite(v)?v*fTime:NaN);
-  const DeltaT=DeltaT_raw.map(v=>Number.isFinite(v)?v*fTime:0);
-
-  const BP_psi = BP_raw.map(v=>Number.isFinite(v)?(v*fBP)/PSI_TO_KPA:NaN);
-  const BHP_psi= BHP_raw.map(v=>Number.isFinite(v)?(v*fBHP)/PSI_TO_KPA:NaN);
-
-  const OIL_m3d=OIL_raw.map(v=>Number.isFinite(v)?v*fOil:NaN);
-  const GAS_m3d=GAS_raw.map(v=>Number.isFinite(v)?v*fGas:NaN);
-  const WAT_m3d=WAT_raw.map(v=>Number.isFinite(v)?v*fWat:NaN);
-
-  const oil_stb=OIL_m3d.map(v=>Number.isFinite(v)?v*M3_TO_STB:NaN);
-  const wat_stb=WAT_m3d.map(v=>Number.isFinite(v)?v*M3_TO_STB:NaN);
-  const gas_mmscf=GAS_m3d.map(v=>Number.isFinite(v)?v*M3_TO_MMSCF:NaN);
-
-  // drawdown and guards
-  const dP_raw=BP_psi.map((bp,i)=>(Number.isFinite(bp)&&Number.isFinite(BHP_psi[i]))?(bp-BHP_psi[i]):NaN);
-  const badDPCount=dP_raw.filter(v=>Number.isFinite(v) && v<=0).length;
-  const dP_nonneg=dP_raw.map(v=>Number.isFinite(v)?Math.max(0,v):NaN);
-  const dP_eff=dP_nonneg.map(v=>Number.isFinite(v)?Math.max(DP_MIN_PSI, v):NaN);
-  const flooredCount=dP_nonneg.filter(v=>Number.isFinite(v) && v>0 && v<DP_MIN_PSI).length;
-
-  // PI & Potential
-  let PI=oil_stb.map((q,i)=>{ const res=safeDiv(q,dP_eff[i]); return Number.isFinite(res)?Math.max(0,res):NaN; });
-  if(PI.length>=3 && Number.isFinite(PI[1]) && Number.isFinite(PI[2])) PI[0]=Math.max(0, PI[1]+(PI[1]-PI[2]));
-  else if(PI.length>=2 && Number.isFinite(PI[1])) PI[0]=Math.max(0, PI[1]);
-
-  const Potential=PI.map((pi,i)=>Number.isFinite(pi)&&Number.isFinite(BP_psi[i])?Math.max(0, pi*BP_psi[i]):NaN);
-
-  // Isotonic intercept (weighted by Δt)
-  const weights=Potential.map((v,i)=>Number.isFinite(v)?Math.max(1e-12,DeltaT[i]||0):0);
-  const iso=isotonicFitNonIncreasing(Potential,weights);
-  const INTERCEPT=makeStrictlyDecreasing(iso);
-
-  // Export extras
-  const oilVolPerStep=oil_stb.map((q,i)=>(Number.isFinite(q)?q:0)*(DeltaT[i]||0));
-  const CumOil=cumsum(oilVolPerStep);
-  const GOR=oil_stb.map((o,i)=>safeDiv(gas_mmscf[i],o));
-  const WATER_FRAC=oil_stb.map((o,i)=>{ const w=wat_stb[i]; const denom=(Number.isFinite(o)?o:0)+(Number.isFinite(w)?w:0); return denom>0?safeDiv(w,denom):NaN; });
-
-  // Warnings (no auto-fix)
-  const warns=[];
-  if(badDPCount>0) warns.push(`Dropped weight on ${badDPCount} row(s): BP ≤ BHP or invalid drawdown.`);
-  if(flooredCount>0) warns.push(`Applied drawdown floor (${DP_MIN_PSI} psi) on ${flooredCount} row(s) to prevent spikes.`);
-  const potClean=Potential.filter(Number.isFinite);
-  if(potClean.length){
-    const p0=potClean[0], p95=quantile(potClean, .95);
-    if(p0>SUSPECT_MAX || p95>SUSPECT_MAX) warns.push(`Potential scale looks high (p0≈${fmt(p0)}, p95≈${fmt(p95)} STB/d). Check oil-rate unit selection.`);
-    if(p0<SUSPECT_MIN) warns.push(`Potential start seems low (≈${fmt(p0)} STB/d). Check oil-rate unit selection.`);
-    const ups=countMonoUps(potClean);
-    if(ups>Math.max(2, Math.floor(potClean.length*0.15))) warns.push(`Potential shows many upward steps before fitting (${ups}). Check data consistency (time order, units).`);
-  }
-
-  return { L, Days, DeltaT, Potential, INTERCEPT, CumOil, GOR, WATER_FRAC, PI, warns };
-}
-function fmt(x){ if(!Number.isFinite(x)) return 'NaN'; if(x>=1e6) return (x/1e6).toFixed(2)+'M'; if(x>=1e3) return (x/1e3).toFixed(1)+'k'; return x.toFixed(0); }
-function quantile(arr,q){ const a=arr.slice().sort((x,y)=>x-y); const i=(a.length-1)*q; const lo=Math.floor(i), hi=Math.ceil(i); if(lo===hi) return a[lo]; return a[lo]*(hi-i)+a[hi]*(i-lo); }
-
-/** export builder */
-function computeWellSeries(well){
-  const core=computeCore(well);
-  if(!core) return null;
-  const { GOR, WATER_FRAC, CumOil, PI, INTERCEPT } = core;
-  const sanitize=a=>a.map(v=>Number.isFinite(v)?v:0);
-  const OIL_PRODUCTION_CUML=sanitize(CumOil);
-  const GAS_OIL_RATIO=sanitize(GOR);
-  const WATER_CUT=sanitize(WATER_FRAC);
-  const SCALING_FACTOR=sanitize(PI);
-  if(SCALING_FACTOR.length) SCALING_FACTOR[SCALING_FACTOR.length-1]=0; // last = 0
   return {
     name: well.name.replace(/\./g,''),
-    length: OIL_PRODUCTION_CUML.length,
-    OIL_PRODUCTION_CUML,
-    GAS_OIL_RATIO,
-    WATER_CUT,
-    INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: INTERCEPT,
-    SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: SCALING_FACTOR
+    length: L,
+    OIL_PRODUCTION_CUML: sanitize(CumOil),
+    GAS_OIL_RATIO: sanitize(GOR),
+    WATER_CUT: sanitize(WATER_FRAC),
+    // Export TLS recon, not raw:
+    INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: sanitize(INTERCEPT_TLS),
+    SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: sanitize(PI_TLS),
+    __plot: {
+      Days,
+      InterceptDarcy: INTERCEPT_DARCY.slice(),
+      InterceptRecon: INTERCEPT_TLS.slice(),
+      InterceptVogel: INTERCEPT_VOGEL.slice(),
+      PI: PI.slice(),
+      PIRecon: PI_TLS.slice(),
+      BP_psi: BP_psi.slice(),
+      BHP_psi: BHP_psi.slice(),
+      q_stbd: oil_stb.slice()
+    }
   };
 }
 
-/** JSON export */
+/** Export JSON */
 function buildJson(){
-  const payload={name:"IPR Decline Curves",series:[],step:{},unitSystem:"ECLIPSE_FIELD",version:"v1", options:{weightByDt:true}};
-  for(const w of wells){
-    const c=computeWellSeries(w); if(!c) continue;
-    payload.step[c.name]=Array.from({length:c.length},(_,i)=>i);
-    const order=["OIL_PRODUCTION_CUML","GAS_OIL_RATIO","WATER_CUT","INTERCEPT_OIL_PHASE_IPR_REF_DEPTH","SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH"];
-    for(const key of order){
+  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1" };
+  for (const w of wells){
+    const c = computeWellSeriesPhysical(w);
+    if (!c) continue;
+    payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
+    const order = ["OIL_PRODUCTION_CUML","GAS_OIL_RATIO","WATER_CUT","INTERCEPT_OIL_PHASE_IPR_REF_DEPTH","SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH"];
+    for (const key of order){
       payload.series.push({
-        description:SERIES_META[key].description,
-        displayUnit:SERIES_META[key].displayUnit,
-        entityName:c.name, entityType:"WELL",
-        measurementID:SERIES_META[key].measurementID,
-        name:key,
-        values:c[key]
+        description: SERIES_META[key].description,
+        displayUnit: SERIES_META[key].displayUnit,
+        entityName: c.name,
+        entityType: "WELL",
+        measurementID: SERIES_META[key].measurementID,
+        name: key,
+        values: c[key]
       });
     }
   }
   return payload;
 }
-function download(filename,obj){
+function download(filename, obj){
   const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
 }
 
-/** duplicate */
-function duplicateActiveWell(copies){
-  const src=wells.find(x=>x.id===activeWellId); if(!src) return;
-  const count=Math.max(1,Math.floor(copies||1));
-  for(let i=0;i<count;i++){
-    const name=nextAvailableWellName(), id=uuid();
-    const tableCopy=src.tableData.map(row=>row.slice());
-    const unitsCopy={...src.units};
-    wells.push({id,name,tableData:tableCopy,units:unitsCopy});
+/** Duplicate */
+function duplicateActiveWell(copies) {
+  const src = wells.find(x=>x.id===activeWellId);
+  if (!src) return;
+  const count = Math.max(1, Math.floor(copies || 1));
+  for (let i=0;i<count;i++) {
+    const name = nextAvailableWellName();
+    const id = uuid();
+    const tableCopy = src.tableData.map(row => row.slice());
+    const unitsCopy = { ...src.units };
+    wells.push({ id, name, tableData: tableCopy, units: unitsCopy });
   }
-  renderTabs(); renderTable(); renderUnits(); updatePreview();
+  renderTabs(); renderAllPlotsAndDiag();
 }
 
-/** ===== Chart ===== */
-function timeAxisLabel(code){
-  switch(code){
-    case 'h': return 'Time (hours)';
-    case 'mo30': return 'Time (months, 30 d)';
-    case 'y365': return 'Time (years, 365 d)';
-    default: return 'Time (days)';
+/** Plotting */
+function clearSVG(svg){ while (svg.firstChild) svg.removeChild(svg.firstChild); }
+function makeSVG(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
+function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
+  clearSVG(svg);
+  const allPts = seriesList.flatMap(s=>s.pts);
+  if (!allPts.length || allPts.length < 2) { if (emptyEl) emptyEl.style.display='block'; return; }
+  if (emptyEl) emptyEl.style.display='none';
+
+  const wBox = svg.viewBox.baseVal.width || 900, hBox = svg.viewBox.baseVal.height || 280;
+  const margin = {left:60, right:16, top:16, bottom:36};
+  const W = wBox - margin.left - margin.right;
+  const H = hBox - margin.top - margin.bottom;
+
+  const xMin = 0;
+  const xMax = Math.max(...allPts.map(p=>p[0])) || 1;
+  const yMin = 0;
+  const yMaxRaw = Math.max(...allPts.map(p=>p[1])) || 1;
+  const yMax = (yMaxRaw<=0?1:yMaxRaw*1.1);
+
+  const xMap = x => margin.left + (xMax===xMin?0:((x-xMin)/(xMax-xMin)))*W;
+  const yMap = y => margin.top + H - (yMax===yMin?0:((y-yMin)/(yMax-yMin)))*H;
+
+  const axes = makeSVG('g');
+  const xAxis = makeSVG('line'); xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', margin.top+H); xAxis.setAttribute('x2', margin.left+W); xAxis.setAttribute('y2', margin.top+H); xAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(xAxis);
+  const yAxis = makeSVG('line'); yAxis.setAttribute('x1', margin.left); yAxis.setAttribute('y1', margin.top); yAxis.setAttribute('x2', margin.left); yAxis.setAttribute('y2', margin.top+H); yAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(yAxis);
+
+  const xticks=5, yticks=5;
+  for (let i=0;i<=xticks;i++){
+    const v = xMin + (i/xticks)*(xMax-xMin);
+    const x = xMap(v);
+    const t = makeSVG('line'); t.setAttribute('x1',x); t.setAttribute('y1',margin.top+H); t.setAttribute('x2',x); t.setAttribute('y2',margin.top+H+6); t.setAttribute('stroke','#2f3b52'); axes.appendChild(t);
+    const lbl = makeSVG('text'); lbl.setAttribute('x',x); lbl.setAttribute('y',margin.top+H+20); lbl.setAttribute('text-anchor','middle'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','#94a3b8'); lbl.textContent = (Math.round(v*100)/100).toString(); axes.appendChild(lbl);
   }
-}
-function buildXForDisplay(Days){
-  const finDays = Days.filter(Number.isFinite).length;
-  return finDays>=2 ? [Days, 'days'] : [Days.map((_,i)=>i), 'index'];
-}
-function updatePreview(){
-  const w=wells.find(x=>x.id===activeWellId);
-  if(!w){ clearCanvas(); return; }
-  const core=computeCore(w);
-  if(!core){ clearCanvas(); warnWrap.style.display='none'; return; }
-  const { Days, Potential, INTERCEPT, warns } = core;
-
-  // warnings UI (non-intrusive)
-  warnList.innerHTML='';
-  if(warns && warns.length){
-    warnWrap.style.display='';
-    for(const msg of warns){ const li=document.createElement('li'); li.textContent=msg; warnList.appendChild(li); }
-  } else {
-    warnWrap.style.display='none';
-  }
-
-  const [x, kind] = buildXForDisplay(Days);
-  const xLabel = kind==='days' ? timeAxisLabel('d') : 'Sample Index';
-  const yLabel = 'Potential / Intercept (STB/d)';
-
-  const y1 = Potential.map(v=>Number.isFinite(v)?Math.max(0,v):NaN);
-  const y2 = INTERCEPT;
-
-  drawLines(x, y1, y2, xLabel, yLabel);
-}
-function clearCanvas(){
-  const ctx=canvas.getContext('2d');
-  const dpr=window.devicePixelRatio||1;
-  const w=canvas.clientWidth||canvas.parentElement.clientWidth;
-  const h=canvas.height;
-  if(canvas.width!==w*dpr){ canvas.width=w*dpr; canvas.height=h*dpr; }
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,w,h);
-}
-function drawLines(x, y1, y2, xLabel, yLabel){
-  const ctx=canvas.getContext('2d');
-  const dpr=window.devicePixelRatio||1;
-  const w=canvas.clientWidth||canvas.parentElement.clientWidth;
-  const h=canvas.height;
-  if(canvas.width!==w*dpr){ canvas.width=w*dpr; canvas.height=h*dpr; }
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,w,h);
-
-  const pad={l:58,t:12,r:10,b:34};
-  const plotW=w-pad.l-pad.r, plotH=h-pad.t-pad.b;
-
-  const pairs = x.map((xi,i)=>({x:xi, y1:y1[i], y2:y2[i]})).filter(p=>Number.isFinite(p.x) && (Number.isFinite(p.y1)||Number.isFinite(p.y2)));
-  if(!pairs.length) return;
-
-  const xmin=Math.min(...pairs.map(p=>p.x));
-  const xmax=Math.max(...pairs.map(p=>p.x));
-  const ymax=Math.max(1e-9, Math.max(
-    ...pairs.map(p=>Number.isFinite(p.y1)?p.y1:-Infinity),
-    ...pairs.map(p=>Number.isFinite(p.y2)?p.y2:-Infinity)
-  ));
-  const ymin=0;
-
-  const sx = v => pad.l + (plotW * ( (v - xmin) / ( (xmax - xmin) || 1 ) ));
-  const sy = v => pad.t + plotH - (plotH * ( (v - ymin) / ( (ymax - ymin) || 1 ) ));
-
-  // axes
-  ctx.strokeStyle='#253041'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(pad.l, sy(0)); ctx.lineTo(pad.l+plotW, sy(0)); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t+plotH); ctx.stroke();
-
-  // grid y ticks + labels
-  ctx.fillStyle='#9ca3af'; ctx.font='11px ui-sans-serif';
-  const ticks=3;
-  for(let t=0;t<=ticks;t++){
-    const frac=t/ticks;
-    const val=ymin+frac*(ymax-ymin);
-    const y=sy(val);
-    ctx.strokeStyle='#1f2937'; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l+plotW, y); ctx.stroke();
-    ctx.fillText(val.toFixed(2), 6, y-2);
+  for (let i=0;i<=yticks;i++){
+    const v = yMin + (i/yticks)*(yMax-yMin);
+    const y = yMap(v);
+    const t = makeSVG('line'); t.setAttribute('x1',margin.left-6); t.setAttribute('y1',y); t.setAttribute('x2',margin.left); t.setAttribute('y2',y); t.setAttribute('stroke','#2f3b52'); axes.appendChild(t);
+    const g = makeSVG('line'); g.setAttribute('x1',margin.left); g.setAttribute('y1',y); g.setAttribute('x2',margin.left+W); g.setAttribute('y2',y); g.setAttribute('stroke','#1f2937'); axes.appendChild(g);
+    const lbl = makeSVG('text'); lbl.setAttribute('x',margin.left-8); lbl.setAttribute('y',y+4); lbl.setAttribute('text-anchor','end'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','#94a3b8'); lbl.textContent = Math.round(v).toString(); axes.appendChild(lbl);
   }
 
-  // series
-  function drawSeries(arr, color){
-    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.beginPath();
-    let first=true;
-    for(let i=0;i<arr.length;i++){
-      const yi=arr[i]; const xi=x[i];
-      if(!Number.isFinite(yi) || !Number.isFinite(xi)) continue;
-      const X=sx(xi), Y=sy(yi);
-      if(first){ ctx.moveTo(X,Y); first=false; } else { ctx.lineTo(X,Y); }
+  const xlab = makeSVG('text'); xlab.setAttribute('x', margin.left+W/2); xlab.setAttribute('y', margin.top+H+32); xlab.setAttribute('text-anchor','middle'); xlab.setAttribute('font-size','12'); xlab.setAttribute('fill','#cbd5e1'); xlab.textContent = xLabel; axes.appendChild(xlab);
+  const ylab = makeSVG('text'); ylab.setAttribute('x', 12); ylab.setAttribute('y', margin.top+H/2); ylab.setAttribute('transform', `rotate(-90 12 ${margin.top+H/2})`); ylab.setAttribute('text-anchor','middle'); ylab.setAttribute('font-size','12'); ylab.setAttribute('fill','#cbd5e1'); ylab.textContent = yLabel; axes.appendChild(ylab);
+
+  svg.appendChild(axes);
+
+  for (const s of seriesList){
+    if (!s.pts.length) continue;
+    const d = s.pts.map((p,i)=>`${i?'L':'M'} ${xMap(p[0])} ${yMap(p[1])}`).join(' ');
+    const path = makeSVG('path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', s.color || '#3b82f6');
+    path.setAttribute('stroke-width','2');
+    if (s.dash) path.setAttribute('stroke-dasharray', s.dash);
+    svg.appendChild(path);
+  }
+}
+
+function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
+  clearSVG(svg);
+  const allPts = seriesList.flatMap(s=>s.pts);
+  if (!allPts.length || allPts.length < 2) { if (emptyEl) emptyEl.style.display='block'; return; }
+  if (emptyEl) emptyEl.style.display='none';
+
+  const wBox = svg.viewBox.baseVal.width || 900, hBox = svg.viewBox.baseVal.height || 300;
+  const margin = {left:70, right:16, top:16, bottom:42};
+  const W = wBox - margin.left - margin.right;
+  const H = hBox - margin.top - margin.bottom;
+
+  const xMin = 0, xMax = Math.max(...allPts.map(p=>p[0])) || 1;
+  const yMin = 0, yMax = Math.max(...allPts.map(p=>p[1])) || 1;
+  const xMap = x => margin.left + (xMax===xMin?0:((x-xMin)/(xMax-xMin)))*W;
+  const yMap = y => margin.top + H - (yMax===yMin?0:((y-yMin)/(yMax-yMin)))*H;
+
+  const axes = makeSVG('g');
+  const xAxis = makeSVG('line'); xAxis.setAttribute('x1',margin.left); xAxis.setAttribute('y1',margin.top+H); xAxis.setAttribute('x2',margin.left+W); xAxis.setAttribute('y2',margin.top+H); xAxis.setAttribute('stroke','#2f3b52'); axes.appendChild(xAxis);
+  const yAxis = makeSVG('line'); yAxis.setAttribute('x1',margin.left); yAxis.setAttribute('y1',margin.top); yAxis.setAttribute('x2',margin.left); yAxis.setAttribute('y2',margin.top+H); yAxis.setAttribute('stroke','#2f3b52'); axes.appendChild(yAxis);
+
+  const xticks=5, yticks=5;
+  for (let i=0;i<=xticks;i++){
+    const v = xMin + (i/xticks)*(xMax-xMin);
+    const x = xMap(v);
+    const t = makeSVG('line'); t.setAttribute('x1',x); t.setAttribute('y1',margin.top+H); t.setAttribute('x2',x); t.setAttribute('y2',margin.top+H+6); t.setAttribute('stroke','#2f3b52'); axes.appendChild(t);
+    const lbl = makeSVG('text'); lbl.setAttribute('x',x); lbl.setAttribute('y',margin.top+H+24); lbl.setAttribute('text-anchor','middle'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','#94a3b8'); lbl.textContent = Math.round(v).toString(); axes.appendChild(lbl);
+  }
+  for (let i=0;i<=yticks;i++){
+    const v = yMin + (i/yticks)*(yMax-yMin);
+    const y = yMap(v);
+    const t = makeSVG('line'); t.setAttribute('x1',margin.left-6); t.setAttribute('y1',y); t.setAttribute('x2',margin.left); t.setAttribute('y2',y); t.setAttribute('stroke','#2f3b52'); axes.appendChild(t);
+    const g = makeSVG('line'); g.setAttribute('x1',margin.left); g.setAttribute('y1',y); g.setAttribute('x2',margin.left+W); g.setAttribute('y2',y); g.setAttribute('stroke','#1f2937'); axes.appendChild(g);
+    const lbl = makeSVG('text'); lbl.setAttribute('x',margin.left-8); lbl.setAttribute('y',y+4); lbl.setAttribute('text-anchor','end'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','#94a3b8'); lbl.textContent = (Math.round(v*1000)/1000).toString(); axes.appendChild(lbl);
+  }
+
+  const xlab = makeSVG('text'); xlab.setAttribute('x', margin.left+W/2); xlab.setAttribute('y', margin.top+H+36); xlab.setAttribute('text-anchor','middle'); xlab.setAttribute('font-size','12'); xlab.setAttribute('fill','#cbd5e1'); xlab.textContent = xLabel; axes.appendChild(xlab);
+  const ylab = makeSVG('text'); ylab.setAttribute('x', 14); ylab.setAttribute('y', margin.top+H/2); ylab.setAttribute('transform', `rotate(-90 14 ${margin.top+H/2})`); ylab.setAttribute('text-anchor','middle'); ylab.setAttribute('font-size','12'); ylab.setAttribute('fill','#cbd5e1'); ylab.textContent = yLabel; axes.appendChild(ylab);
+
+  svg.appendChild(axes);
+
+  for (const s of seriesList){
+    for (const [xv,yv] of s.pts){
+      if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
+      const c = makeSVG('circle');
+      c.setAttribute('cx', xMap(xv));
+      c.setAttribute('cy', yMap(yv));
+      c.setAttribute('r', 3.2);
+      c.setAttribute('fill', s.color || '#3b82f6');
+      svg.appendChild(c);
     }
-    ctx.stroke();
   }
-  drawSeries(y1, '#6ee7b7');  // Potential
-  drawSeries(y2, '#93c5fd');  // Intercept (fit)
-
-  // axis labels
-  ctx.fillStyle='#e5e7eb'; ctx.font='12px ui-sans-serif';
-  ctx.textAlign='center'; ctx.fillText(xLabel, pad.l+plotW/2, pad.t+plotH+24);
-  ctx.save();
-  ctx.translate(14, pad.t+plotH/2);
-  ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center';
-  ctx.fillText(yLabel, 0, 0);
-  ctx.restore();
 }
 
-/** export */
-function getActiveWell(){ return wells.find(x=>x.id===activeWellId); }
+/** Diagnostics (Darcy) */
+function buildDiagnostics(plot){
+  const msgs = [];
+  const tolRel = 0.05;
+  const {Days, InterceptDarcy, PI, BP_psi, BHP_psi, q_stbd} = plot;
+
+  for (let i=0;i<Days.length;i++){
+    const day = Days[i];
+    const bp = BP_psi[i], bhp = BHP_psi[i];
+    const q = q_stbd[i], pi = PI[i], itc = InterceptDarcy[i];
+    if (![bp,bhp,q].every(Number.isFinite)) continue;
+
+    const dp = Math.max(0, bp - bhp);
+    if (bp < bhp) msgs.push(`t=${day}: BP < BHP → Δp<0 (check pressures).`);
+
+    if (Number.isFinite(pi) && Number.isFinite(bp) && Number.isFinite(itc)){
+      const expect = pi*bp, denom = Math.max(1, Math.abs(itc));
+      const rel = Math.abs(itc - expect) / denom;
+      if (rel > tolRel) msgs.push(`t=${day}: Intercept mismatch (>5%). I=${itc.toFixed(2)}, PI*BP=${expect.toFixed(2)}.`);
+    }
+
+    if (Number.isFinite(q) && Number.isFinite(itc) && q > itc*(1+tolRel))
+      msgs.push(`t=${day}: q (${q.toFixed(2)}) > Intercept (${itc.toFixed(2)}).`);
+
+    if (dp < 1e-6 && q > 0) msgs.push(`t=${day}: Δp≈0 but q>0 (check BHP/BP).`);
+
+    if ((!Number.isFinite(pi) || pi===0) && q>0 && dp>0)
+      msgs.push(`t=${day}: PI≈0 but q>0 and Δp>0 (check units).`);
+  }
+  return msgs;
+}
+
+/** Render all outputs */
+function renderAllPlotsAndDiag(){
+  const w = wells.find(x=>x.id===activeWellId);
+  clearSVG(svgIntercept); clearSVG(svgPI); clearSVG(svgPIvsInt);
+  if (!w) return;
+
+  const comp = computeWellSeriesPhysical(w);
+  if (!comp || !comp.__plot) {
+    emptyIntercept.style.display='block';
+    emptyPI.style.display='block';
+    emptyPIvsInt.style.display='block';
+    diagBox.innerHTML = `<span class="ok">No issues yet.</span>`;
+    return;
+  }
+
+  const X = comp.__plot.Days || [];
+  const YintD = comp.__plot.InterceptDarcy || [];
+  const YintV = comp.__plot.InterceptVogel || [];
+  const YintR = comp.__plot.InterceptRecon || [];
+  const Ypi = comp.__plot.PI || [];
+  const YpiR = comp.__plot.PIRecon || [];
+
+  const ptsIntD = [], ptsIntV = [], ptsIntRecon = [];
+  const ptsPI = [], ptsPIRecon = [];
+  const ptsScatterRaw = [], ptsReconScatter = [];
+
+  for (let i=0;i<X.length; i++){
+    const x = X[i];
+    const itcD = YintD[i], itcR = YintR[i], itcV = YintV[i];
+    const pi = Ypi[i], piR = YpiR[i];
+    if (Number.isFinite(x) && Number.isFinite(itcD)) ptsIntD.push([x, itcD]);
+    if (Number.isFinite(x) && Number.isFinite(itcR)) ptsIntRecon.push([x, itcR]);
+    if (Number.isFinite(x) && Number.isFinite(pi)) ptsPI.push([x, pi]);
+    if (Number.isFinite(x) && Number.isFinite(piR)) ptsPIRecon.push([x, piR]);
+    if (Number.isFinite(itcD) && Number.isFinite(pi)) ptsScatterRaw.push([itcD, pi]);
+    if (Number.isFinite(itcR) && Number.isFinite(piR)) ptsReconScatter.push([itcR, piR]);
+    if (Number.isFinite(x) && Number.isFinite(itcV)) ptsIntV.push([x, itcV]);
+  }
+
+  const doVogel = overlayVogel && overlayVogel.checked;
+
+  const seriesInt = [
+    { pts: ptsIntD, color: '#3b82f6' },
+    { pts: ptsIntRecon, color: '#a78bfa' }
+  ];
+  if (doVogel) seriesInt.push({ pts: ptsIntV, color: '#22c55e' });
+  renderLineMulti(svgIntercept, seriesInt, {xLabel:'Days', yLabel:'Intercept (STB/d)', emptyEl: emptyIntercept});
+
+  const seriesPI = [
+    { pts: ptsPI, color: '#3b82f6' },
+    { pts: ptsPIRecon, color: '#a78bfa' }
+  ];
+  renderLineMulti(svgPI, seriesPI, {xLabel:'Days', yLabel:'IPR (STB/d)/psi', emptyEl: emptyPI});
+
+  const seriesSc = [
+    { pts: ptsScatterRaw, color: '#3b82f6' },
+    { pts: ptsReconScatter, color: '#a78bfa' }
+  ];
+  renderScatterMulti(svgPIvsInt, seriesSc, {xLabel:'Intercept (STB/d)', yLabel:'IPR (STB/d)/psi', emptyEl: emptyPIvsInt});
+
+  const diags = buildDiagnostics(comp.__plot);
+  if (!diags.length){
+    diagBox.innerHTML = `<span class="ok">All checks passed.</span>`;
+  } else {
+    const items = diags.slice(0, 30).map(m=>`<li>${m}</li>`).join('');
+    diagBox.innerHTML = `<div class="bad"><b>${diags.length}</b> issue(s) detected:</div><ul>${items}</ul>`;
+  }
+}
 
 /** UI actions */
-addWellBtn.onclick=()=>addWell();
-downloadBtn.onclick=()=>download('ipr_decline_curves.json',buildJson());
-deleteWellBtn.onclick=()=>{ const w=getActiveWell(); if(!w) return; if(confirm(`Delete well "${w.name}"?`)) deleteWell(w.id); };
-clearDataBtn.onclick=()=>{ const w=getActiveWell(); if(!w) return; if(!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData=Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); renderUnits(); updatePreview(); };
-duplicateBtn.onclick=()=>{ const n=Number(copyCountInput.value); const count=Number.isFinite(n)?n:1; (count>0)&&duplicateActiveWell(count); };
+addWellBtn.onclick = () => addWell();
+downloadBtn.onclick = () => download('ipr_decline_curves.json', buildJson());
+deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
+deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?")) resetAllWells(); };
+clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); renderAllPlotsAndDiag(); };
+duplicateBtn.onclick = () => { const n = Number(copyCountInput.value); duplicateActiveWell(Number.isFinite(n) ? n : 1); };
+overlayVogel.onchange = () => renderAllPlotsAndDiag();
 
-/** boot */
-function boot(){ addWell('P1'); }
-boot();
+/** Boot */
+addWell('P1');
 </script>
 </body>
 </html>
