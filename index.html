@@ -1,3 +1,4 @@
+<!-- /index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,7 +23,7 @@
     .mtab{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1528;cursor:pointer;font-size:12px;color:#cbd5e1;opacity:.9}
     .mtab.active{outline:2px solid var(--accent);opacity:1}
 
-    /* Layout */
+    /* layout */
     .wrap{padding:16px;display:flex;justify-content:center}.container{width:100%;max-width:980px}.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .controls{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;font-size:12px}.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
@@ -42,7 +43,7 @@
     .diag{font-size:12px;color:#eab308}.diag .ok{color:#22c55e}.diag .bad{color:#f87171}.diag ul{margin:6px 0 0 18px;padding:0}
     .legend{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:11px;color:#cbd5e1;flex-wrap:wrap}.legend .item{display:flex;gap:6px;align-items:center}.chip{width:14px;height:3px;border-radius:2px;display:inline-block}
 
-    /* discrete QC toggle button (top-right) */
+    /* header right button */
     .spacer{flex:1}
     .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.15);cursor:pointer}
     .iconbtn:hover{background:rgba(255,255,255,.12)}
@@ -66,7 +67,7 @@
 
     <div class="spacer"></div>
 
-    <!-- QC plots visibility toggle -->
+    <!-- QC toggle -->
     <button class="iconbtn" id="qcToggleBtn" title="Toggle QC plots">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
@@ -75,7 +76,7 @@
     </button>
   </header>
 
-  <!-- page-level mode tabs -->
+  <!-- mode tabs -->
   <div class="mtabs" id="modeTabs">
     <div class="mtab active" data-mode="smoothing">Smoothing DC</div>
     <div class="mtab" data-mode="raw">Raw DC</div>
@@ -163,7 +164,7 @@
         </div>
       </div>
 
-      <!-- legend card: now tied to QC toggle -->
+      <!-- legend hidden with QC -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="legend mono">
           <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
@@ -171,7 +172,7 @@
         </div>
       </div>
 
-      <!-- QC plot cards -->
+      <!-- plots -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">Intercept (q @ pwf=0) vs Cumulative Oil — STB/day</div>
         <div class="plot-wrap">
@@ -196,7 +197,7 @@
         </div>
       </div>
 
-      <!-- diagnostics card: now tied to QC toggle -->
+      <!-- diagnostics hidden with QC -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">Diagnostics — Sanity Checks (Darcy IPR)</div>
         <div class="diag" id="diagBox"><span class="ok">No issues yet.</span></div>
@@ -220,9 +221,9 @@ const PSI_TO_KPA = 6.894757293168, BAR_TO_KPA = 100.0, MPA_TO_KPA = 1000.0;
 
 let wells = []; let activeWellId = null;
 
-/* page mode + QC toggle state */
-let appMode = 'smoothing'; // 'smoothing' | 'raw'
-let qcVisible = false; // default hidden on boot
+/* modes + QC */
+let appMode = 'smoothing';
+let qcVisible = false; // hidden on boot
 
 /** DOM refs */
 const modeTabsEl = document.getElementById('modeTabs');
@@ -259,8 +260,6 @@ const isMostlyNonNumericRow = row => row.map(toNumber).filter(Number.isFinite).l
 function ensureRows(well, rowsNeeded){ const add = Math.max(0, rowsNeeded - well.tableData.length); for (let i=0;i<add;i++) well.tableData.push(Array(WELL_COLS.length).fill('')); return add; }
 function isWellEmpty(well){ for (const row of well.tableData) for (const cell of row) if (String(cell ?? '').trim() !== '') return false; return true; }
 function nextAvailableWellName(){ const used=new Set(); for(const w of wells){ const m=/^P(\d+)$/.exec(w.name.trim()); if(m) used.add(+m[1]); } let n=1; while(used.has(n)) n++; return `P${n}`; }
-
-/* sanitize for JSON safety */
 function sanitizeArray(arr){ return (arr||[]).map(v => Number.isFinite(v) ? v : 0); }
 
 /** Units */
@@ -558,7 +557,6 @@ function computeWellSeriesPhysical(well){
 /** Export JSON */
 function enforceLastZero(arr){ if(!arr||!arr.length) return arr; const out=arr.slice(); out[out.length-1]=0; return out; }
 
-/* unified builder that respects appMode */
 function buildJson(mode){
   const isAnchored = (mode === 'smoothing');
   const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode: isAnchored ? "anchored" : "raw" };
@@ -569,6 +567,7 @@ function buildJson(mode){
 
     payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
 
+    // common series
     const baseOrder = [
       ["OIL_PRODUCTION_CUML","Oil production cumulative", c.OIL_PRODUCTION_CUML, "STB", "Liquid_Production_Volume"],
       ["GAS_OIL_RATIO","Gas oil ratio", c.GAS_OIL_RATIO, "MSCF/STB", "Gas_To_Liquid_Ratio"],
@@ -598,8 +597,18 @@ function buildJson(mode){
         values: PI_pp.slice()
       });
     } else {
+      // RAW: no fitting
       const INT_raw = sanitizeArray(c.__plot?.InterceptDarcy || []);
       const PI_raw  = sanitizeArray(c.__plot?.PI || []);
+
+      // why: avoid “well closed” due to leading zero; follow user's exact rule
+      if (INT_raw.length >= 2 && INT_raw[0] === 0 && Number.isFinite(INT_raw[1]) && INT_raw[1] > 0) {
+        INT_raw[0] = INT_raw[1];
+      }
+      if (PI_raw.length >= 2 && PI_raw[0] === 0 && Number.isFinite(PI_raw[1]) && PI_raw[1] > 0) {
+        PI_raw[0] = PI_raw[1];
+      }
+
       payload.series.push({
         description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
         displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
@@ -621,7 +630,7 @@ function buildJson(mode){
   return payload;
 }
 
-/** Plotting (unchanged) */
+/** Plotting */
 function clearSVG(svg){ while (svg.firstChild) svg.removeChild(svg.firstChild); }
 function makeSVG(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 
@@ -691,12 +700,13 @@ function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
 
   const xMin = 0, xMax = Math.max(...allPts.map(p=>p[0])) || 1;
   const yMin = 0, yMax = Math.max(...allPts.map(p=>p[1])) || 1;
+
   const xMap = x => margin.left + (xMax===xMin?0:((x-xMin)/(xMax-xMin)))*W;
   const yMap = y => margin.top + H - (yMax===yMin?0:((y-yMin)/(yMax-yMin)))*H;
 
   const axes = makeSVG('g');
-  const xAxis = makeSVG('line'); xAxis.setAttribute('x1',margin.left); xAxis.setAttribute('y1',margin.top+H); xAxis.setAttribute('x2',margin.left+W); xAxis.setAttribute('y2',margin.top+H); xAxis.setAttribute('stroke','#2f3b52'); axes.appendChild(xAxis);
-  const yAxis = makeSVG('line'); yAxis.setAttribute('x1',margin.left); yAxis.setAttribute('y1',margin.top); yAxis.setAttribute('x2',margin.left); yAxis.setAttribute('y2',margin.top+H); yAxis.setAttribute('stroke','#2f3b52'); axes.appendChild(yAxis);
+  const xAxis = makeSVG('line'); xAxis.setAttribute('x1',margin.left); xAxis.setAttribute('y1',margin.top+H); xAxis.setAttribute('x2',margin.left+W); xAxis.setAttribute('y2',margin.top+H); xAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(xAxis);
+  const yAxis = makeSVG('line'); yAxis.setAttribute('x1',margin.left); yAxis.setAttribute('y1',margin.top); yAxis.setAttribute('x2',margin.left); yAxis.setAttribute('y2',margin.top+H); yAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(yAxis);
 
   const xticks=5, yticks=5;
   for (let i=0;i<=xticks;i++){
@@ -728,7 +738,7 @@ function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
   }
 }
 
-/** Diagnostics (unchanged) */
+/** Diagnostics */
 function buildDiagnostics(plot){
   const msgs = [];
   const tolRel = 0.05;
@@ -836,7 +846,7 @@ function downloadFile(filename, obj){
   }
 }
 
-/** Mode UI wiring */
+/** Mode UI */
 function updateModeUI(){
   Array.from(modeTabsEl.querySelectorAll('.mtab')).forEach(el=>{
     el.classList.toggle('active', el.dataset.mode === appMode);
@@ -853,9 +863,8 @@ modeTabsEl.addEventListener('click', (e)=>{
   }
 });
 
-/** QC plots toggle (display only) */
+/** QC toggle */
 function applyQcVisibility(){
-  // why: single control hides plots, legend, and diagnostics together
   document.querySelectorAll('.qc-plot').forEach(el => el.classList.toggle('hidden', !qcVisible));
   qcToggleBtn.style.opacity = qcVisible ? '1' : '0.6';
 }
@@ -885,7 +894,7 @@ duplicateBtn.onclick = () => {
   renderTabs(); safeRenderAll();
 };
 
-/** Safe render + global error surfacing */
+/** Safe render + errors */
 function safeRenderAll(){
   try { renderAllPlotsAndDiag(); }
   catch (err){
@@ -902,7 +911,7 @@ window.onerror = function(message, source, lineno, colno, error){
 /** Boot */
 updateModeUI();
 addWell('P1');
-applyQcVisibility(); // ensure hidden on page boot
+applyQcVisibility(); // start hidden
 </script>
 </body>
 </html>
