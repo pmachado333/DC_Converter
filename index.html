@@ -1,4 +1,3 @@
-<!-- /mnt/data/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,51 +5,32 @@
   <title>IXFM Decline Curve Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --brand:#22c55e; --accent:#3b82f6; --danger:#ef4444; --border:#1f2937; --slb:#003366; --amber:#eab308; --green:#22c55e; }
-    * { box-sizing:border-box }
-    body { margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; background:var(--bg); color:var(--text) }
-    header { padding:14px 16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; border-bottom:1px solid var(--border); position:sticky; top:0; background: linear-gradient(180deg, var(--slb) 0%, #012a52 100%); color:#fff; z-index:2; }
-    .brandwrap { display:flex; flex-direction:column; margin-right:8px }
-    .title { font-size:18px; font-weight:700; line-height:1.1 }
-    .subtitle { font-size:12px; opacity:.9 }
-    .btn { padding:8px 12px; border:1px solid rgba(255,255,255,.2); border-radius:10px; background:rgba(255,255,255,.06); color:#fff; cursor:pointer; font-weight:600; font-size:12px }
-    .btn:hover { background:rgba(255,255,255,.1) }
-    .btn.brand { background:#16a34a; border-color:#0e7a34; color:#052e16 }
-    .btn.danger { background:var(--danger); border-color:#991b1b; color:#fff }
-    .btn.dark { background:#0b1220; border-color:#2a364d; color:#e5e7eb }
-    .hint { color:#e5e7eb; opacity:.85; font-size:11px }
-    .tabs { display:flex; flex-wrap:wrap; gap:6px; row-gap:8px; padding:10px 16px; margin-top:28px; border-bottom:1px solid var(--border); background:#0e1527; overflow:visible; }
-    .tab { display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); background:var(--card); border-radius:10px; cursor:pointer; white-space:nowrap; font-size:12px }
-    .tab.active { outline:2px solid var(--accent) }
-    .tab input { background:transparent; color:#e5e7eb; border:none; width:120px; font-weight:600; font-size:12px }
-    .tab .x { font-weight:800; color:#94a3b8; cursor:pointer }
-    .wrap { padding:16px; display:flex; justify-content:center }
-    .container { width:100%; max-width:980px; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px }
-    .controls { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; font-size:12px }
-    .right { display:flex; gap:8px; align-items:center; flex-wrap:wrap }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace }
-    .units { display:grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap:8px; margin:10px 0 6px }
-    .units label { display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--muted) }
-    select, input[type="number"] { background:#0b1220; color:#e5e7eb; border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:12px }
-    input[type="number"] { width:72px }
-    table { width:100%; border-collapse:collapse; table-layout:fixed }
-    thead th { position:sticky; top:0; background:#0b1220; z-index:1 }
-    th,td { border:1px solid #1f2937; padding:6px; text-align:left; vertical-align:top; font-size:12px; line-height:1.2 }
-    td[contenteditable="true"] { outline:none }
-    td:focus { box-shadow: inset 0 0 0 2px var(--accent) }
-    .plot-title { font-size:12px; color:var(--muted); margin-bottom:8px }
-    .plot-wrap { width:100%; overflow:auto }
-    .plot-empty { font-size:12px; color:var(--muted); padding:8px }
-    .diag { font-size:12px; color:#eab308; }
-    .diag .ok { color:#22c55e }
-    .diag .bad { color:#f87171 }
-    .diag ul { margin:6px 0 0 18px; padding:0 }
-    .legend { display:flex; gap:12px; align-items:center; margin-top:6px; font-size:11px; color:#cbd5e1; flex-wrap:wrap }
-    .legend .item { display:flex; gap:6px; align-items:center }
-    .chip { width:14px; height:3px; border-radius:2px; display:inline-block }
-    .export { display:flex; align-items:center; gap:8px }
-    .export label { font-size:11px; opacity:.9 }
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --brand:#22c55e; --accent:#3b82f6; --danger:#ef4444; --border:#1f2937; --slb:#003366; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:var(--bg);color:var(--text)}
+    header{padding:14px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--slb) 0%,#012a52 100%);color:#fff;z-index:2}
+    .brandwrap{display:flex;flex-direction:column;margin-right:8px}.title{font-size:18px;font-weight:700;line-height:1.1}.subtitle{font-size:12px;opacity:.9}
+    .btn{padding:8px 12px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-weight:600;font-size:12px}
+    .btn:hover{background:rgba(255,255,255,.1)}.btn.brand{background:#16a34a;border-color:#0e7a34;color:#052e16}.btn.danger{background:var(--danger);border-color:#991b1b;color:#fff}.btn.dark{background:#0b1220;border-color:#2a364d;color:#e5e7eb}
+    .hint{color:#e5e7eb;opacity:.85;font-size:11px}
+    .tabs{display:flex;flex-wrap:wrap;gap:6px;row-gap:8px;padding:10px 16px;margin-top:28px;border-bottom:1px solid var(--border);background:#0e1527}
+    .tab{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);background:var(--card);border-radius:10px;cursor:pointer;white-space:nowrap;font-size:12px}
+    .tab.active{outline:2px solid var(--accent)}.tab input{background:transparent;color:#e5e7eb;border:none;width:120px;font-weight:600;font-size:12px}.tab .x{font-weight:800;color:#94a3b8;cursor:pointer}
+    .wrap{padding:16px;display:flex;justify-content:center}.container{width:100%;max-width:980px}.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
+    .controls{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;font-size:12px}.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .units{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:8px;margin:10px 0 6px}
+    .units label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted)}
+    select,input[type="number"]{background:#0b1220;color:#e5e7eb;border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px}
+    input[type="number"]{width:72px}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    thead th{position:sticky;top:0;background:#0b1220;z-index:1}
+    th,td{border:1px solid #1f2937;padding:6px;text-align:left;vertical-align:top;font-size:12px;line-height:1.2}
+    td[contenteditable="true"]{outline:none}td:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+    .plot-title{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .plot-wrap{width:100%;overflow:auto}.plot-empty{font-size:12px;color:var(--muted);padding:8px}
+    .diag{font-size:12px;color:#eab308}.diag .ok{color:#22c55e}.diag .bad{color:#f87171}.diag ul{margin:6px 0 0 18px;padding:0}
+    .legend{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:11px;color:#cbd5e1;flex-wrap:wrap}.legend .item{display:flex;gap:6px;align-items:center}.chip{width:14px;height:3px;border-radius:2px;display:inline-block}
   </style>
 </head>
 <body>
@@ -60,14 +40,7 @@
       <div class="subtitle">Prototype Version</div>
     </div>
     <button class="btn dark" id="addWellBtn">+ Add Well</button>
-    <div class="export">
-      <label class="hint">Export:</label>
-      <select id="exportMode">
-        <option value="anchored" selected>Anchored (max at t0)</option>
-        <option value="unanchored">Unanchored (best exp/hyp)</option>
-      </select>
-    </div>
-    <button class="btn brand" id="downloadBtn">Download JSON</button>
+    <button class="btn brand" id="downloadBtn">Download JSON (Anchored)</button>
     <button class="btn danger" id="deleteAllBtn">Delete All Wells</button>
     <span class="hint">Tip: paste from Excel; rows auto-expand.</span>
   </header>
@@ -89,8 +62,7 @@
         </div>
 
         <div class="units">
-          <label>
-            Time Unit
+          <label>Time Unit
             <select id="u_time">
               <option value="d">days</option>
               <option value="h">hours</option>
@@ -98,8 +70,7 @@
               <option value="y365">years (365 d)</option>
             </select>
           </label>
-          <label>
-            Block P Unit
+          <label>Block P Unit
             <select id="u_bp">
               <option value="kpa">kPa</option>
               <option value="bar">bar</option>
@@ -107,8 +78,7 @@
               <option value="psi">psi</option>
             </select>
           </label>
-          <label>
-            BHP Unit
+          <label>BHP Unit
             <select id="u_bhp">
               <option value="kpa">kPa</option>
               <option value="bar">bar</option>
@@ -116,24 +86,21 @@
               <option value="psi">psi</option>
             </select>
           </label>
-          <label>
-            Oil Rate Unit
+          <label>Oil Rate Unit
             <select id="u_oil">
               <option value="m3d">m³/day</option>
               <option value="stbd">STB/day</option>
               <option value="m3h">m³/hour</option>
             </select>
           </label>
-          <label>
-            Gas Rate Unit
+          <label>Gas Rate Unit
             <select id="u_gas">
               <option value="m3d">m³/day</option>
               <option value="mscf">MSCF/day</option>
               <option value="mmscf">MMSCF/day</option>
             </select>
           </label>
-          <label>
-            Water Rate Unit
+          <label>Water Rate Unit
             <select id="u_wat">
               <option value="m3d">m³/day</option>
               <option value="stbd">STB/day</option>
@@ -163,13 +130,11 @@
         <div class="legend mono">
           <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
           <div class="item"><span class="chip" style="background:#eab308"></span>Anchored Fit</div>
-          <div class="item"><span class="chip" style="background:#22c55e"></span>Unanchored Fit</div>
-          <div class="item"><span class="chip" style="background:#64748b"></span>Export mode → <span id="legendExportMode">Anchored</span></div>
         </div>
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="plot-title mono">Intercept (q @ pwf=0) vs Days — STB/day</div>
+        <div class="plot-title mono">Intercept (q @ pwf=0) vs Cumulative Oil — STB/day</div>
         <div class="plot-wrap">
           <svg id="plotIntercept" width="100%" height="280" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
           <div id="emptyIntercept" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
@@ -177,7 +142,7 @@
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="plot-title mono">IPR (Productivity Index) vs Days — STB/(day.psi)</div>
+        <div class="plot-title mono">IPR (Productivity Index) vs Cumulative Oil — STB/(day.psi)</div>
         <div class="plot-wrap">
           <svg id="plotPI" width="100%" height="280" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
           <div id="emptyPI" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
@@ -185,7 +150,7 @@
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="plot-title mono">IPR vs Intercept — Scatter (Raw vs Fits)</div>
+        <div class="plot-title mono">IPR vs Intercept — Scatter (Raw vs Anchored)</div>
         <div class="plot-wrap">
           <svg id="plotPIvsInt" width="100%" height="300" viewBox="0 0 900 300" preserveAspectRatio="none"></svg>
           <div id="emptyPIvsInt" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
@@ -194,9 +159,7 @@
 
       <div class="card" style="margin-top:12px;">
         <div class="plot-title mono">Diagnostics — Sanity Checks (Darcy IPR)</div>
-        <div class="diag" id="diagBox">
-          <span class="ok">No issues yet.</span>
-        </div>
+        <div class="diag" id="diagBox"><span class="ok">No issues yet.</span></div>
       </div>
     </div>
   </div>
@@ -204,8 +167,6 @@
 <script>
 /** Constants & state */
 const WELL_COLS = ["Time","Well Block Pressure - 9P","Bottom-hole Pressure","Oil Rate","Gas Rate","Water Rate"];
-
-/* Keep these EXACT for export */
 const SERIES_META = {
   OIL_PRODUCTION_CUML: { description:"Oil production cumulative rate", displayUnit:"STB", measurementID:"Liquid_Production_Volume" },
   GAS_OIL_RATIO: { description:"Gas Oil Ratio", displayUnit:"MSCF/STB", measurementID:"Gas_To_Liquid_Ratio" },
@@ -213,27 +174,16 @@ const SERIES_META = {
   INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR intercept", displayUnit:"STB/day", measurementID:"Liquid_Flowrate" },
   SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR scaling factor", displayUnit:"STB/(day.psi)", measurementID:"Liquid_Productivity_Index" }
 };
+const M3_TO_STB = 6.28981077, STB_TO_M3 = 1/M3_TO_STB;
+const M3_TO_MMSCF = 35.3146667 / 1e6;
+const PSI_TO_KPA = 6.894757293168, BAR_TO_KPA = 100.0, MPA_TO_KPA = 1000.0;
 
-/* Unit factors */
-const M3_TO_STB = 6.28981077;
-const STB_TO_M3 = 1 / M3_TO_STB;
-/* Correct: m³ → MMSCF = 35.3146667 / 1,000,000 */
-const M3_TO_MMSCF = 3.53146667e-5 / 1000;
-
-const PSI_TO_KPA = 6.894757293168;
-const BAR_TO_KPA = 100.0;
-const MPA_TO_KPA = 1000.0;
-
-let wells = [];
-let activeWellId = null;
-let exportMode = 'anchored';
+let wells = []; let activeWellId = null;
 
 /** DOM refs */
 const tabsEl = document.getElementById('tabs');
 const bodyEl = document.getElementById('tableBody');
 const addWellBtn = document.getElementById('addWellBtn');
-const exportModeSel = document.getElementById('exportMode');
-const legendExportMode = document.getElementById('legendExportMode');
 const downloadBtn = document.getElementById('downloadBtn');
 const deleteAllBtn = document.getElementById('deleteAllBtn');
 const deleteWellBtn = document.getElementById('deleteWellBtn');
@@ -257,21 +207,11 @@ const diagBox = document.getElementById('diagBox');
 
 /** Helpers */
 const uuid = () => Math.random().toString(36).slice(2,9);
-const toNumber = v => {
-  if (typeof v === 'number') return v;
-  if (v == null) return NaN;
-  const s = String(v).trim().replace(/,/g,'');
-  if (s === '') return NaN;
-  const n = Number(s);
-  return Number.isFinite(n) ? n : NaN;
-};
+const toNumber = v => { if (typeof v === 'number') return v; if (v==null) return NaN; const s=String(v).trim().replace(/,/g,''); if(!s) return NaN; const n=Number(s); return Number.isFinite(n)?n:NaN; };
 const isMostlyNonNumericRow = row => row.map(toNumber).filter(Number.isFinite).length <= 2;
-function ensureRows(well, rowsNeeded) { const add = Math.max(0, rowsNeeded - well.tableData.length); for (let i=0;i<add;i++) well.tableData.push(Array(WELL_COLS.length).fill('')); return add; }
-function isWellEmpty(well) { for (const row of well.tableData) for (const cell of row) if (String(cell ?? '').trim() !== '') return false; return true; }
-function nextAvailableWellName() {
-  const used = new Set(); for (const w of wells) { const m = /^P(\d+)$/.exec(w.name.trim()); if (m) used.add(Number(m[1])); }
-  let n = 1; while (used.has(n)) n++; return `P${n}`;
-}
+function ensureRows(well, rowsNeeded){ const add = Math.max(0, rowsNeeded - well.tableData.length); for (let i=0;i<add;i++) well.tableData.push(Array(WELL_COLS.length).fill('')); return add; }
+function isWellEmpty(well){ for (const row of well.tableData) for (const cell of row) if (String(cell ?? '').trim() !== '') return false; return true; }
+function nextAvailableWellName(){ const used=new Set(); for(const w of wells){ const m=/^P(\d+)$/.exec(w.name.trim()); if(m) used.add(+m[1]); } let n=1; while(used.has(n)) n++; return `P${n}`; }
 
 /** Units */
 function factorTimeToDays(code){ switch(code){ case 'd': return 1; case 'h': return 1/24; case 'mo30': return 30; case 'y365': return 365; default: return 1; } }
@@ -280,237 +220,188 @@ function factorOilWaterToM3d(code){ switch(code){ case 'm3d': return 1; case 'st
 function factorGasToM3d(code){ switch(code){ case 'm3d': return 1; case 'mscf': return 28.316846592; case 'mmscf': return 28316.846592; default: return 1; } }
 function applyFactorArray(arr, factor){ return arr.map(v => Number.isFinite(v) ? v*factor : NaN); }
 
-/** Tabs & wells */
-function defaultUnits(){ return { time:'d', bp:'kpa', bhp:'kpa', oil:'m3d', gas:'m3d', wat:'m3d' }; }
-function createWell(name){ return { id: uuid(), name, units: defaultUnits(), tableData: Array.from({length:30}, () => Array(WELL_COLS.length).fill('')) }; }
-function addWell(initialName) { const name = initialName ?? `P${wells.length+1}`; const well = createWell(name); wells.push(well); setActiveWell(well.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
-function deleteWell(id) { wells = wells.filter(w=>w.id!==id); if (!wells.length) addWell('P1'); setActiveWell(wells[0].id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
-function deleteWellWithMaybeConfirm(id) { const w = wells.find(x=>x.id===id); if (!w) return; if (isWellEmpty(w)) { deleteWell(id); } else { if (confirm(`Delete well "${w.name}"?`)) deleteWell(id); } }
-function resetAllWells() { wells = []; addWell('P1'); }
-function setActiveWell(id) { activeWellId = id; activeWellNameEl.textContent = wells.find(w=>w.id===id)?.name ?? ''; }
-function renameWell(id,newName) { const w = wells.find(x=>x.id===id); if (!w) return; w.name = newName.trim() || w.name; if (id===activeWellId) activeWellNameEl.textContent = w.name; }
-function renderTabs() {
-  const tabsElLoc = tabsEl;
-  tabsElLoc.innerHTML = '';
-  wells.forEach(w=>{
-    const tab=document.createElement('div');
-    tab.className='tab'+(w.id===activeWellId?' active':''); 
-    tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); };
-    const input=document.createElement('input'); input.value=w.name; input.oninput=e=>renameWell(w.id,e.target.value);
-    const close=document.createElement('span'); close.className='x'; close.textContent='×'; close.onclick=(ev)=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); };
-    tab.appendChild(input); tab.appendChild(close); tabsElLoc.appendChild(tab);
-  });
-}
-
-/** Table */
-function renderTable() {
-  const w = wells.find(x=>x.id===activeWellId); if (!w) return;
-  bodyEl.innerHTML='';
-  w.tableData.forEach((row,r)=>{
-    const tr=document.createElement('tr');
-    for (let c=0;c<WELL_COLS.length;c++){
-      const td=document.createElement('td');
-      td.contentEditable='true'; td.spellcheck=false;
-      td.dataset.row=r; td.dataset.col=c;
-      td.textContent=row[c] ?? '';
-      td.addEventListener('input', onCellInput);
-      td.addEventListener('paste', onCellPaste);
-      tr.appendChild(td);
-    }
-    bodyEl.appendChild(tr);
-  });
-}
-function onCellInput(e){
-  const td=e.currentTarget; const r=+td.dataset.row, c=+td.dataset.col;
-  const w=wells.find(x=>x.id===activeWellId);
-  w.tableData[r][c]=td.textContent;
-  safeRenderAll();
-}
-function onCellPaste(e){
-  e.preventDefault();
-  const td=e.currentTarget; const startR=+td.dataset.row, startC=+td.dataset.col;
-  const raw=(e.clipboardData||window.clipboardData).getData('text');
-  const lines=raw.replace(/\r/g,'').split('\n').filter(Boolean).map(l=>l.split('\t'));
-  if (!lines.length) return;
-  const payload=isMostlyNonNumericRow(lines[0])?lines.slice(1):lines;
-  const w=wells.find(x=>x.id===activeWellId);
-  const added=ensureRows(w, startR+payload.length);
-  if (added>0) renderTable();
-  for (let i=0;i<payload.length;i++){
-    const cols=payload[i];
-    for (let j=0;j<cols.length && (startC+j)<WELL_COLS.length;j++){
-      const r=startR+i, c=startC+j;
-      w.tableData[r][c]=cols[j];
-      const cell=bodyEl.querySelector(`td[data-row="${r}"][data-col="${c}"]`);
-      if (cell) cell.textContent=cols[j];
-    }
-  }
-  safeRenderAll();
-}
-
-/** Math utils */
-function safeDiv(a,b){ return (Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(b)>0)?(a/b):NaN; }
-function cumsum(arr){ const out=[]; let s=0; for (const v of arr){ const x=Number.isFinite(v)?v:0; s+=x; out.push(s) } return out; }
-function median(arr){ const v=arr.filter(Number.isFinite).slice().sort((a,b)=>a-b); const n=v.length; if(!n) return NaN; const m=Math.floor(n/2); return n%2? v[m] : 0.5*(v[m-1]+v[m]); }
-
-/** OLS for PI vs Intercept (scatter only) */
-function olsYonX(xs, ys){
-  let n=0, sx=0, sy=0, sxx=0, sxy=0;
-  for (let i=0;i<xs.length;i++){
-    const x=xs[i], y=ys[i];
-    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
-    n++; sx+=x; sy+=y; sxx+=x*x; sxy+=x*y;
-  }
-  const denom = n*sxx - sx*sx;
-  if (n<2 || Math.abs(denom)<1e-12) return null;
-  const m = (n*sxy - sx*sy) / denom;
-  const b = (sy - m*sx) / n;
-  return { m, b };
-}
-
-/** Decline fits */
-function fitExpDecay(T, Y){
-  const t=[], lnY=[];
-  for (let i=0;i<T.length;i++){
-    const ti=T[i], yi=Y[i];
-    if (Number.isFinite(ti) && Number.isFinite(yi) && yi>0){ t.push(ti); lnY.push(Math.log(yi)); }
-  }
-  const n=t.length; if (n<2) return null;
-  let sx=0, sxx=0, sy=0, sxy=0;
-  for (let i=0;i<n;i++){ const x=t[i], y=lnY[i]; sx+=x; sxx+=x*x; sy+=y; sxy+=x*y; }
-  const denom = (n*sxx - sx*sx);
-  if (Math.abs(denom) < 1e-12) return null;
-  const c = (n*sxy - sx*sy) / denom;
-  const a = (sy - c*sx) / n;
-  let A = Math.exp(a);
-  let b = -c;
-  if (!Number.isFinite(A) || A<=0) return null;
-  if (!Number.isFinite(b) || b<=0) b = 1e-8;
-  const predict = (ti)=> Math.max(0, A * Math.exp(-b * Math.max(0,ti)));
-  let sse=0;
-  for (let i=0;i<n;i++){ const e = (predict(t[i]) - Math.exp(lnY[i])); sse += e*e; }
-  const k=2; const aic = n>0 ? (n*Math.log((sse/n)||1e-18) + 2*k) : Infinity;
-  return { type:'exp', A, b, predict, sse, n, aic };
-}
-function fitHyperbolic(T, Y){
-  const t=[], y=[];
-  for (let i=0;i<T.length;i++){
-    const ti=T[i], yi=Y[i];
-    if (Number.isFinite(ti) && Number.isFinite(yi) && yi>0){ t.push(Math.max(0,ti)); y.push(yi); }
-  }
-  const npts = t.length;
-  if (npts < 3) return null;
-
-  const tmax = Math.max(...t);
-  const tspan = Math.max(1e-9, tmax);
-  const logspace = (a,b,k)=>{ const out=[]; const la=Math.log(a), lb=Math.log(b); for (let i=0;i<k;i++){ const u=i/(k-1); out.push(Math.exp(la + (lb-la)*u)); } return out; };
-
-  const nCand = [0.3,0.5,0.7,1.0,1.2,1.5];
-  const bCand = logspace(1e-6, 10/tspan, 18);
-
-  let best=null;
-  for (const n of nCand){
-    for (const b of bCand){
-      let sumBy=0, sumB2=0;
-      for (let i=0;i<npts;i++){
-        const base = 1/Math.pow(1 + b*t[i], n);
-        sumBy += base * y[i];
-        sumB2 += base * base;
-      }
-      let A = (sumB2>0) ? (sumBy / sumB2) : 0;
-      if (!Number.isFinite(A) || A<=0) continue;
-      let sse=0;
-      for (let i=0;i<npts;i++){
-        const yi = A / Math.pow(1 + b*t[i], n);
-        const e = yi - y[i];
-        sse += e*e;
-      }
-      if (!best || sse < best.sse){
-        const predict = (ti)=> Math.max(0, A / Math.pow(1 + b*Math.max(0,ti), n));
-        const k=3;
-        const aic = npts>0 ? (npts*Math.log((sse/npts)||1e-18) + 2*k) : Infinity;
-        best = { type:'hyperbolic', A, b, n, predict, sse, n:npts, aic };
-      }
-    }
-  }
-  return best;
-}
-/* Anchored helpers */
-function sumsXY(xs, ys){
-  let n=0, sx2=0, sxy=0;
-  for (let i=0;i<xs.length;i++){
-    const x=xs[i], y=ys[i];
-    if (Number.isFinite(x) && Number.isFinite(y)){ n++; sx2+=x*x; sxy+=x*y; }
-  }
-  return { n, sx2, sxy };
-}
-function fitExpAnchored(A0, T, Y, t0){
-  const x=[], z=[];
-  for (let i=0;i<T.length;i++){
-    const yi = Y[i], ti = T[i];
-    if (Number.isFinite(ti) && Number.isFinite(yi) && yi>0){
-      const dx = Math.max(0, ti - t0);
-      x.push(dx);
-      z.push(Math.log(A0/yi));
-    }
-  }
-  const S = sumsXY(x, z);
-  if (S.n < 2 || S.sx2 <= 0) return null;
-  let b = S.sxy / S.sx2;
-  if (!Number.isFinite(b) || b <= 0) b = 1e-8;
-  const predict = (t) => Math.max(0, A0 * Math.exp(-b * Math.max(0, t - t0)));
-  let sse=0, n=0;
-  for (let i=0;i<T.length;i++){
-    const yi = Y[i], ti = T[i];
-    if (Number.isFinite(yi) && Number.isFinite(ti)){
-      const e = predict(ti) - yi; sse += e*e; n++;
-    }
-  }
-  const k=1;
-  const aic = n>0 ? (n*Math.log((sse/n)||1e-18) + 2*k) : Infinity;
-  return { type:'exp', A:A0, b, t0, predict, sse, n, aic };
-}
-function fitHypAnchored(A0, T, Y, t0){
-  const tOff = T.map(t => Number.isFinite(t) ? Math.max(0, t - t0) : NaN);
-  const valid = []; for (let i=0;i<T.length;i++){ if (Number.isFinite(tOff[i]) && Number.isFinite(Y[i]) && Y[i]>0) valid.push(i); }
-  if (valid.length < 3) return null;
-
-  const tspan = Math.max(1e-9, Math.max(...valid.map(i => tOff[i])));
-  const logspace = (a,b,k)=>{ const out=[]; const la=Math.log(a), lb=Math.log(b); for (let i=0;i<k;i++){ const u=i/(k-1); out.push(Math.exp(la + (lb-la)*u)); } return out; };
-  const nCand = [0.3,0.5,0.7,1.0,1.2,1.5];
-  const bCand = logspace(1e-6, 10/tspan, 18);
-
-  let best = null;
-  for (const n of nCand){
-    for (const b of bCand){
-      let sse = 0, npts=0;
-      for (const i of valid){
-        const ti = tOff[i];
-        const yi = Y[i];
-        const yhat = A0 / Math.pow(1 + b*ti, n);
-        const e = yhat - yi;
-        sse += e*e; npts++;
-      }
-      if (!best || sse < best.sse){
-        const predict = (t) => Math.max(0, A0 / Math.pow(1 + b*Math.max(0, t - t0), n));
-        const k=2;
-        const aic = npts>0 ? (npts*Math.log((sse/npts)||1e-18) + 2*k) : Infinity;
-        best = { type:'hyperbolic', A:A0, b, n, t0, predict, sse, n:npts, aic };
-      }
-    }
-  }
-  return best;
-}
+/** Math & fitting */
+const MAX_SEGMENTS = 6;
+function aicFromSSE(sse, n, k){ return (n>0) ? (n * Math.log(Math.max(sse/n,1e-18)) + 2*k) : Infinity; }
 function enforceNonIncreasing(arr){
-  const out = arr.slice();
-  for (let i=1;i<out.length;i++){
-    if (!Number.isFinite(out[i-1])) continue;
-    if (!Number.isFinite(out[i])) { out[i]=out[i-1]; continue; }
-    if (out[i] > out[i-1]) out[i] = out[i-1];
-    if (out[i] < 0) out[i] = 0;
+  if(!arr.length) return arr.slice();
+  const out=arr.slice();
+  let seed = 0;
+  for(let i=0;i<out.length;i++){ if(Number.isFinite(out[i])){ seed = Math.max(0,out[i]); break; } }
+  if(!Number.isFinite(out[0])) out[0] = seed;
+  for(let i=1;i<out.length;i++){
+    if(!Number.isFinite(out[i])) out[i]=out[i-1];
+    if(out[i]>out[i-1]) out[i]=out[i-1];
+    if(out[i]<0) out[i]=0;
   }
   return out;
 }
+function validIndexMap(X,Y){
+  const idx=[];
+  for(let i=0;i<X.length;i++){ const xi=X[i], yi=Y[i]; if(Number.isFinite(xi)&&Number.isFinite(yi)&&yi>=0) idx.push(i); }
+  return idx;
+}
+function validXY(X,Y){
+  const x=[], y=[];
+  for(let i=0;i<X.length;i++){
+    const xi=X[i], yi=Y[i];
+    if(Number.isFinite(xi) && Number.isFinite(yi) && yi>=0){ x.push(Math.max(0,xi)); y.push(yi); }
+  }
+  return {x,y};
+}
+function validXYW(X,Y,W){
+  const x=[], y=[], w=[];
+  for(let i=0;i<X.length;i++){
+    const xi=X[i], yi=Y[i];
+    let wi = (W && Number.isFinite(W[i])) ? Math.max(0, W[i]) : 1;
+    if(Number.isFinite(xi) && Number.isFinite(yi) && yi>=0 && wi>0){ x.push(Math.max(0,xi)); y.push(yi); w.push(wi); }
+  }
+  return {x,y,w};
+}
+function linRegAnchoredConstrained(x, y, a0, x0){
+  const n = x.length; if(n<1) return {b:0,sse:0};
+  let num=0, den=0; for(let i=0;i<n;i++){ const dx=x[i]-x0; num += dx*(y[i]-a0); den += dx*dx; }
+  let b = (den>0)? (num/den) : 0; if(!Number.isFinite(b) || b>0) b=0;
+  let sse=0; for(let i=0;i<n;i++){ const e=(a0 + b*(x[i]-x0)) - y[i]; sse+=e*e; }
+  return {b,sse};
+}
+function linRegAnchoredWeighted(x, y, w, a0, x0){
+  const n=x.length; if(n<1) return {b:0,sse:0};
+  let num=0, den=0;
+  for(let i=0;i<n;i++){ const dx=x[i]-x0; const wi=w[i]; num += wi*dx*(y[i]-a0); den += wi*dx*dx; }
+  let b = (den>0)? (num/den) : 0; if(!Number.isFinite(b) || b>0) b=0;
+  let sse=0; for(let i=0;i<n;i++){ const e=(a0 + b*(x[i]-x0)) - y[i]; sse += w[i]*e*e; }
+  return {b,sse};
+}
+function precomputeSSE(x,y){
+  const n=x.length; const SSE=Array.from({length:n},()=>Array(n).fill(Infinity));
+  for(let i=0;i<n;i++){
+    let sx=0, sy=0, sxx=0, sxy=0, m=0;
+    for(let j=i;j<n;j++){
+      const xx=x[j], yy=y[j]; m++; sx+=xx; sy+=yy; sxx+=xx*xx; sxy+=xx*yy;
+      const denom = m*sxx - sx*sx;
+      let b = (Math.abs(denom)<1e-12)?0:(m*sxy - sx*sy)/denom; if(!Number.isFinite(b) || b>0) b=0;
+      const a = (sy - b*sx)/m;
+      let sse=0; for(let k=i;k<=j;k++){ const e=(a + b*x[k]) - y[k]; sse+=e*e; }
+      SSE[i][j]=sse;
+    }
+  }
+  return SSE;
+}
+function dpBreaks(x,y,Kmax){
+  const n=x.length; const SSE=precomputeSSE(x,y);
+  const maxK = Math.min(Kmax, Math.max(1, Math.floor(n/3)));
+  const dp = Array.from({length:maxK+1},()=>Array(n).fill(Infinity));
+  const prev = Array.from({length:maxK+1},()=>Array(n).fill(-1));
+  for(let j=0;j<n;j++){ dp[1][j]=SSE[0][j]; prev[1][j]=-1; }
+  for(let k=2;k<=maxK;k++){
+    for(let j=0;j<n;j++){
+      let best=Infinity, besti=-1;
+      for(let i=k-2;i<j;i++){
+        const cand = dp[k-1][i] + SSE[i+1][j];
+        if(cand<best){ best=cand; besti=i; }
+      }
+      dp[k][j]=best; prev[k][j]=besti;
+    }
+  }
+  const models=[];
+  for(let k=1;k<=maxK;k++){
+    let j=n-1; const ends=[];
+    for(let seg=k; seg>=1; seg--){ ends.unshift(j); j = prev[seg][j]; }
+    models.push({K:k, ends});
+  }
+  return models;
+}
+function buildAnchoredContinuous(x,y,ends,anchorY){
+  const pred=new Array(x.length).fill(NaN);
+  let start=0; let x0=0; let a0=anchorY;
+  for(const end of ends){
+    const segx=x.slice(start,end+1), segy=y.slice(start,end+1);
+    const {b}=linRegAnchoredConstrained(segx,segy,a0,x0);
+    for(let i=start;i<=end;i++) pred[i]=Math.max(0, a0 + b*(x[i]-x0));
+    x0 = x[end]; a0 = pred[end]; start=end+1;
+  }
+  return pred;
+}
+function buildAnchoredContinuousWeighted(x,y,w,ends,anchorY){
+  const pred=new Array(x.length).fill(NaN);
+  let start=0; let x0=0; let a0=anchorY;
+  for(const end of ends){
+    const segx=x.slice(start,end+1), segy=y.slice(start,end+1), segw=w.slice(start,end+1);
+    const {b}=linRegAnchoredWeighted(segx,segy,segw,a0,x0);
+    for(let i=start;i<=end;i++) pred[i]=Math.max(0, a0 + b*(x[i]-x0));
+    x0 = x[end]; a0 = pred[end]; start=end+1;
+  }
+  return pred;
+}
+function bestAnchoredPiecewise_Unweighted(X,Y,A0){
+  const {x,y}=validXY(X,Y);
+  const n=x.length; if(n<2){
+    const out=new Array(X.length).fill(0); let j=0;
+    for(let i=0;i<X.length;i++){ const xi=X[i], yi=Y[i]; if(Number.isFinite(xi)&&Number.isFinite(yi)&&yi>=0){ out[i]=yi; j++; } }
+    return {pred:enforceNonIncreasing(out), ends:[X.length-1], validIdx: validIndexMap(X,Y)};
+  }
+  const cand = dpBreaks(x,y,MAX_SEGMENTS);
+  const {b:blin,sse:sseLin}=linRegAnchoredConstrained(x,y,(A0||0),0);
+  const predLin=x.map(t=>Math.max(0,(A0||0)+blin*t));
+  let best = {pred:predLin, aic:aicFromSSE(sseLin,n,1), ends:[n-1]};
+  for(const m of cand){
+    const pred = buildAnchoredContinuous(x,y,m.ends,(A0||0));
+    let sse=0; for(let i=0;i<n;i++){ const e=pred[i]-y[i]; sse+=e*e; }
+    const aic = aicFromSSE(sse,n,(m.K+(m.K-1)));
+    if(aic<best.aic) best = {pred,aic,ends:m.ends.slice()};
+  }
+  const validIdx = validIndexMap(X,Y);
+  const back = new Array(X.length).fill(NaN); let j=0;
+  for(let i=0;i<X.length;i++){ const xi=X[i], yi=Y[i]; if(Number.isFinite(xi)&&Number.isFinite(yi)&&yi>=0){ back[i]=best.pred[j++]; } }
+  return {pred:enforceNonIncreasing(back), ends:best.ends, validIdx};
+}
+function bestAnchoredPiecewise_Weighted_withFixedEnds(X,Y,A0,W,fixedGlobalEnds){
+  const validIdx = [];
+  const x=[], y=[], w=[];
+  for(let i=0;i<X.length;i++){
+    const xi=X[i], yi=Y[i]; const wi=(W && Number.isFinite(W[i]))?Math.max(0,W[i]):1;
+    if(Number.isFinite(xi)&&Number.isFinite(yi)&&yi>=0 && wi>0){ validIdx.push(i); x.push(Math.max(0,xi)); y.push(yi); w.push(wi); }
+  }
+  const n=x.length;
+  if(n<2){
+    const out=new Array(X.length).fill(0); let j=0;
+    for(let i=0;i<X.length;i++){ const xi=X[i], yi=Y[i], wi=(W?W[i]:1); if(Number.isFinite(xi)&&Number.isFinite(yi)&&yi>=0&&(wi>0)){ out[i]=yi; j++; } }
+    return {pred:enforceNonIncreasing(out)};
+  }
+  // Map global fixed ends -> indices in the filtered PI domain
+  const piEnds = [];
+  let last = -1;
+  for (const gEnd of fixedGlobalEnds){
+    // find first index in validIdx >= gEnd
+    let k = validIdx.findIndex(id => id >= gEnd);
+    if (k === -1) k = validIdx.length - 1;
+    if (k <= last) continue; // keep strictly increasing
+    piEnds.push(k);
+    last = k;
+  }
+  if (piEnds[piEnds.length-1] !== n-1) piEnds[piEnds.length-1] = n-1;
+  const pred = buildAnchoredContinuousWeighted(x,y,w,piEnds,(A0||0));
+  const back=new Array(X.length).fill(NaN); let j=0;
+  for(let i=0;i<X.length;i++){ const xi=X[i], yi=Y[i], wi=(W?W[i]:1); if(Number.isFinite(xi)&&Number.isFinite(yi)&&yi>=0 && wi>0){ back[i]=pred[j++]; } }
+  return {pred:enforceNonIncreasing(back)};
+}
+
+/** Tabs & wells */
+function defaultUnits(){ return { time:'d', bp:'kpa', bhp:'kpa', oil:'m3d', gas:'m3d', wat:'m3d' }; }
+function createWell(name){ return { id: uuid(), name, units: defaultUnits(), tableData: Array.from({length:30}, () => Array(WELL_COLS.length).fill('')) }; }
+function addWell(initialName){ const name=initialName ?? `P${wells.length+1}`; const w=createWell(name); wells.push(w); setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
+function deleteWell(id){ wells = wells.filter(w=>w.id!==id); if(!wells.length) addWell('P1'); setActiveWell(wells[0].id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
+function deleteWellWithMaybeConfirm(id){ const w=wells.find(x=>x.id===id); if(!w) return; if(isWellEmpty(w)) deleteWell(id); else if(confirm(`Delete well "${w.name}"?`)) deleteWell(id); }
+function resetAllWells(){ wells=[]; addWell('P1'); }
+function setActiveWell(id){ activeWellId=id; activeWellNameEl.textContent=wells.find(w=>w.id===id)?.name ?? ''; }
+function renameWell(id,newName){ const w=wells.find(x=>x.id===id); if(!w) return; w.name=newName.trim()||w.name; if(id===activeWellId) activeWellNameEl.textContent=w.name; }
+function renderTabs(){ tabsEl.innerHTML=''; wells.forEach(w=>{ const tab=document.createElement('div'); tab.className='tab'+(w.id===activeWellId?' active':''); tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }; const input=document.createElement('input'); input.value=w.name; input.oninput=e=>renameWell(w.id,e.target.value); const close=document.createElement('span'); close.className='x'; close.textContent='×'; close.onclick=(ev)=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); }; tab.appendChild(input); tab.appendChild(close); tabsEl.appendChild(tab); }); }
+
+/** Table */
+function renderTable(){ const w=wells.find(x=>x.id===activeWellId); if(!w) return; bodyEl.innerHTML=''; w.tableData.forEach((row,r)=>{ const tr=document.createElement('tr'); for(let c=0;c<WELL_COLS.length;c++){ const td=document.createElement('td'); td.contentEditable='true'; td.spellcheck=false; td.dataset.row=r; td.dataset.col=c; td.textContent=row[c] ?? ''; td.addEventListener('input', onCellInput); td.addEventListener('paste', onCellPaste); tr.appendChild(td);} bodyEl.appendChild(tr); }); }
+function onCellInput(e){ const td=e.currentTarget; const r=+td.dataset.row, c=+td.dataset.col; const w=wells.find(x=>x.id===activeWellId); w.tableData[r][c]=td.textContent; safeRenderAll(); }
+function onCellPaste(e){ e.preventDefault(); const td=e.currentTarget; const startR=+td.dataset.row, startC=+td.dataset.col; const raw=(e.clipboardData||window.clipboardData).getData('text'); const lines=raw.replace(/\r/g,'').split('\n').filter(Boolean).map(l=>l.split('\t')); if(!lines.length) return; const payload=isMostlyNonNumericRow(lines[0])?lines.slice(1):lines; const w=wells.find(x=>x.id===activeWellId); const added=ensureRows(w, startR+payload.length); if(added>0) renderTable(); for(let i=0;i<payload.length;i++){ const cols=payload[i]; for(let j=0;j<cols.length && (startC+j)<WELL_COLS.length;j++){ const r=startR+i, c=startC+j; w.tableData[r][c]=cols[j]; const cell=bodyEl.querySelector(`td[data-row="${r}"][data-col="${c}"]`); if(cell) cell.textContent=cols[j]; } } safeRenderAll(); }
 
 /** Core computation */
 function computeWellSeriesPhysical(well){
@@ -549,141 +440,67 @@ function computeWellSeriesPhysical(well){
   const BP_psi = BP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);
   const BHP_psi = BHP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);
 
-  const GOR = oil_stb.map((o,i)=>safeDiv(gas_mmscf[i], o));
-  const WATER_FRAC = oil_stb.map((o,i)=>{
-    const w = wat_stb[i];
-    const denom = (Number.isFinite(o)?o:0) + (Number.isFinite(w)?w:0);
-    return denom > 0 ? safeDiv(w, denom) : NaN;
-  });
+  const GOR = oil_stb.map((o,i)=> (Number.isFinite(o) && o>0) ? gas_mmscf[i]/o : NaN);
+  const WATER_FRAC = oil_stb.map((o,i)=>{ const w = wat_stb[i]; const denom = (Number.isFinite(o)?o:0) + (Number.isFinite(w)?w:0); return denom > 0 ? (w/denom) : NaN; });
 
   const dDays = Days.map(v=>Number.isFinite(v)?v:0);
   for (let i=dDays.length-1;i>=1;i--) dDays[i] = (Number.isFinite(Days[i])?Days[i]:0) - (Number.isFinite(Days[i-1])?Days[i-1]:0);
   const oilVolPerDate = oil_stb.map((q,i)=>(Number.isFinite(q)?q:0) * (Number.isFinite(dDays[i])?dDays[i]:0));
-  const CumOil = cumsum(oilVolPerDate);
+  const CumOil = (function(){ const out=[]; let s=0; for(const v of oilVolPerDate){ s+=v; out.push(s);} return out; })();
 
-  const dP = BP_psi.map((bp,i)=>{
-    const pwf = BHP_psi[i];
-    return (Number.isFinite(bp) && Number.isFinite(pwf)) ? Math.max(0, bp - pwf) : NaN;
-  });
+  const dP = BP_psi.map((bp,i)=> (Number.isFinite(bp) && Number.isFinite(BHP_psi[i])) ? Math.max(0, bp - BHP_psi[i]) : NaN);
 
-  let PI = oil_stb.map((q,i)=> {
-    const dp = dP[i];
-    const val = safeDiv(q, dp);
-    return Number.isFinite(val) ? Math.max(0, val) : NaN;
-  });
-  if (PI.length >= 2 && !Number.isFinite(PI[0]) && Number.isFinite(PI[1])) PI[0] = PI[1];
+  let PI = oil_stb.map((q,i)=> { const dp=dP[i]; return (Number.isFinite(q) && Number.isFinite(dp) && dp>0) ? Math.max(0,q/dp) : NaN; });
+  if (PI.length>=2 && !Number.isFinite(PI[0]) && Number.isFinite(PI[1])) PI[0]=PI[1];
 
-  let INTERCEPT_DARCY = PI.map((pi,i)=>{
-    const bp = BP_psi[i];
-    const val = (Number.isFinite(pi) && Number.isFinite(bp)) ? (pi * bp) : NaN;
-    return Number.isFinite(val) ? Math.max(0, val) : NaN;
-  });
-  if (INTERCEPT_DARCY.length>=2 && !Number.isFinite(INTERCEPT_DARCY[0]) && Number.isFinite(INTERCEPT_DARCY[1])) {
-    INTERCEPT_DARCY[0] = INTERCEPT_DARCY[1];
-  }
+  let INTERCEPT_DARCY = PI.map((pi,i)=> (Number.isFinite(pi) && Number.isFinite(BP_psi[i])) ? Math.max(0, pi*BP_psi[i]) : NaN);
+  if (INTERCEPT_DARCY.length>=2 && !Number.isFinite(INTERCEPT_DARCY[0]) && Number.isFinite(INTERCEPT_DARCY[1])) INTERCEPT_DARCY[0]=INTERCEPT_DARCY[1];
 
   const intVals = INTERCEPT_DARCY.filter(v=>Number.isFinite(v) && v>=0);
   const piVals  = PI.filter(v=>Number.isFinite(v) && v>=0);
   const IntAnchor = intVals.length ? Math.max(...intVals) : 0;
   const PIAnchor  = piVals.length ? Math.max(...piVals) : 0;
 
-  let t0 = 0; for (let i=0;i<Days.length;i++){ if (Number.isFinite(Days[i])) { t0 = Days[i]; break; } }
+  const Xcum = CumOil.slice();
 
-  const T = [], I = [];
-  for (let i=0;i<INTERCEPT_DARCY.length;i++){
-    const t=Days[i], y=INTERCEPT_DARCY[i];
-    if (Number.isFinite(t) && Number.isFinite(y) && y>0){ T.push(t); I.push(y); }
-  }
-  const Tpi = [], Ypi = [];
-  for (let i=0;i<PI.length;i++){
-    const t=Days[i], y=PI[i];
-    if (Number.isFinite(t) && Number.isFinite(y) && y>0){ Tpi.push(t); Ypi.push(y); }
-  }
+  // 1) Intercept: anchored pw-linear (AIC) → ends (in filtered space) + valid indices in original space
+  const interceptModel = bestAnchoredPiecewise_Unweighted(Xcum, INTERCEPT_DARCY, IntAnchor);
+  const InterceptA = interceptModel.pred;
+  const endsIntFiltered = interceptModel.ends;
+  const validIntIdx = interceptModel.validIdx; // positions in original arrays used by Intercept fit
+  // map filtered ends -> global indices
+  const endsIntGlobal = endsIntFiltered.map(fi => validIntIdx[fi]);
 
-  /* Anchored Intercept */
-  let fitIntExp = (IntAnchor>0 && T.length>=2) ? fitExpAnchored(IntAnchor, T, I, t0) : null;
-  let fitIntHyp = (IntAnchor>0 && T.length>=3) ? fitHypAnchored(IntAnchor, T, I, t0) : null;
-  let chosenIntA = null;
-  if (fitIntExp && fitIntHyp) chosenIntA = (fitIntHyp.aic <= fitIntExp.aic) ? fitIntHyp : fitIntExp;
-  else chosenIntA = fitIntHyp || fitIntExp;
+  // 2) PI weights from Δp (clamped to reduce low-Δp noise)
+  const dpValid = dP.filter(Number.isFinite).filter(v=>v>0);
+  const dpMed = dpValid.length ? dpValid.sort((a,b)=>a-b)[Math.floor(dpValid.length/2)] : 1;
+  const wPI = dP.map(v=>{
+    if(!Number.isFinite(v) || v<=0) return 0.05;
+    const r = v / (dpMed || 1);
+    return Math.min(4, Math.max(0.25, r));
+  });
 
-  let InterceptA = new Array(Days.length).fill(NaN);
-  if (chosenIntA){
-    for (let i=0;i<Days.length;i++){ const t=Days[i]; InterceptA[i] = Number.isFinite(t) ? chosenIntA.predict(t) : NaN; }
-  } else {
-    InterceptA = INTERCEPT_DARCY.slice();
-  }
-  InterceptA = enforceNonIncreasing(InterceptA);
-  if (InterceptA.length) InterceptA[0] = IntAnchor;
-
-  /* Unanchored Intercept */
-  let InterceptU = new Array(Days.length).fill(NaN);
-  if (T.length>=2){
-    const fExp = fitExpDecay(T,I);
-    const fHyp = fitHyperbolic(T,I);
-    let chosen = null;
-    if (fExp && fHyp) chosen = (fHyp.aic <= fExp.aic) ? fHyp : fExp; else chosen = fHyp || fExp;
-    if (chosen){
-      for (let i=0;i<Days.length;i++){ const t=Days[i]; InterceptU[i] = Number.isFinite(t) ? chosen.predict(t) : NaN; }
-      InterceptU = enforceNonIncreasing(InterceptU);
-    } else { InterceptU = enforceNonIncreasing(INTERCEPT_DARCY.slice()); }
-  } else { InterceptU = enforceNonIncreasing(INTERCEPT_DARCY.slice()); }
-
-  /* Anchored PI */
-  let chosenPIA = null;
-  if (PIAnchor>0 && Tpi.length>=2){
-    if (chosenIntA && chosenIntA.type === 'exp'){
-      chosenPIA = fitExpAnchored(PIAnchor, Tpi, Ypi, t0);
-    } else {
-      chosenPIA = fitHypAnchored(PIAnchor, Tpi, Ypi, t0) || fitExpAnchored(PIAnchor, Tpi, Ypi, t0);
-    }
-  }
-  let PIA = new Array(Days.length).fill(NaN);
-  if (chosenPIA){
-    for (let i=0;i<Days.length;i++){ const t=Days[i]; PIA[i] = Number.isFinite(t) ? chosenPIA.predict(t) : NaN; }
-  } else {
-    const scale = (IntAnchor>0) ? (PIAnchor/IntAnchor) : 0;
-    for (let i=0;i<Days.length;i++){ PIA[i] = Number.isFinite(InterceptA[i]) ? Math.max(0, scale * InterceptA[i]) : NaN; }
-  }
-  PIA = enforceNonIncreasing(PIA);
-  if (PIA.length) PIA[0] = PIAnchor;
-
-  /* Unanchored PI — direct fit */
-  let PIU = new Array(Days.length).fill(NaN);
-  if (Tpi.length>=2){
-    const fExpPI = fitExpDecay(Tpi, Ypi);
-    const fHypPI = fitHyperbolic(Tpi, Ypi);
-    let bestPI = null;
-    if (fExpPI && fHypPI) bestPI = (fHypPI.aic <= fExpPI.aic) ? fHypPI : fExpPI; else bestPI = fHypPI || fExpPI;
-    if (bestPI){
-      for (let i=0;i<Days.length;i++){ const t=Days[i]; PIU[i] = Number.isFinite(t) ? bestPI.predict(t) : NaN; }
-    } else {
-      const medPI = median(Ypi.filter(Number.isFinite));
-      PIU = Days.map(()=> Math.max(0, medPI || 0));
-    }
-  }
-  PIU = enforceNonIncreasing(PIU);
+  // 3) PI: force to share Intercept's breakpoints by mapping global ends to PI's filtered domain
+  const piForced = bestAnchoredPiecewise_Weighted_withFixedEnds(Xcum, PI, PIAnchor, wPI, endsIntGlobal);
+  const PIA = piForced.pred;
 
   const sanitize = a => a.map(v=>Number.isFinite(v)?v:0);
 
   return {
-    name: well.name.replace(/\./g,''),
-    length: L,
+    name: well.name.replace(/\\./g,''),
+    length: Xcum.length,
     OIL_PRODUCTION_CUML: sanitize(CumOil),
     GAS_OIL_RATIO: sanitize(GOR),
     WATER_CUT: sanitize(WATER_FRAC),
     INTERCEPT_A: sanitize(InterceptA),
     PI_A: sanitize(PIA),
-    INTERCEPT_U: sanitize(InterceptU),
-    PI_U: sanitize(PIU),
     __plot: {
       Days,
+      CumOil: Xcum.slice(),
       InterceptDarcy: INTERCEPT_DARCY.slice(),
       InterceptA: InterceptA.slice(),
-      InterceptU: InterceptU.slice(),
       PI: PI.slice(),
       PIA: PIA.slice(),
-      PIU: PIU.slice(),
       BP_psi: BP_psi.slice(),
       BHP_psi: BHP_psi.slice(),
       q_stbd: oil_stb.slice()
@@ -691,88 +508,35 @@ function computeWellSeriesPhysical(well){
   };
 }
 
-/** Post-processing helper: force last to zero (export only) */
-function enforceLastZero(arr){
-  if (!arr || !arr.length) return arr;
-  const out = arr.slice();
-  out[out.length - 1] = 0; // why: align with requested post-processing convention
-  return out;
-}
-
-/** Export JSON (Anchored/Unanchored) */
+/** Export JSON (Anchored only) */
+function enforceLastZero(arr){ if(!arr||!arr.length) return arr; const out=arr.slice(); out[out.length-1]=0; return out; }
 function buildJson(){
-  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode };
+  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode:"anchored" };
   for (const w of wells){
     const c = computeWellSeriesPhysical(w);
     if (!c) continue;
     payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
+    const INT_pp = enforceLastZero(c.INTERCEPT_A);
+    const PI_pp  = enforceLastZero(c.PI_A);
 
-    const pick = (exportMode === 'anchored')
-      ? { INT: c.INTERCEPT_A, PI: c.PI_A }
-      : { INT: c.INTERCEPT_U, PI: c.PI_U };
-
-    /* Apply post-processing requirement */
-    const INT_pp = enforceLastZero(pick.INT);
-    const PI_pp  = enforceLastZero(pick.PI);
-
-    /* Non-IPR series (unchanged) */
     const baseOrder = [
       ["OIL_PRODUCTION_CUML","Oil production cumulative", c.OIL_PRODUCTION_CUML, "STB", "Liquid_Production_Volume"],
       ["GAS_OIL_RATIO","Gas oil ratio", c.GAS_OIL_RATIO, "MSCF/STB", "Gas_To_Liquid_Ratio"],
       ["WATER_CUT","Water cut", c.WATER_CUT, "STB/STB", "Liquid_To_Liquid_Ratio"]
     ];
     for (const [key, desc, arr, unit, mid] of baseOrder){
-      payload.series.push({
-        description: desc,
-        displayUnit: unit,
-        entityName: c.name,
-        entityType: "WELL",
-        measurementID: mid,
-        name: key,
-        values: arr.slice()
-      });
+      payload.series.push({ description: desc, displayUnit: unit, entityName: c.name, entityType: "WELL", measurementID: mid, name: key, values: arr.slice() });
     }
-
-    /* IPR series — EXACT metadata preserved + last=0 */
     const iprOrder = [
       ["INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", INT_pp],
       ["SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", PI_pp]
     ];
     for (const [key, arr] of iprOrder){
       const meta = SERIES_META[key];
-      payload.series.push({
-        description: meta.description,
-        displayUnit: meta.displayUnit,
-        entityName: c.name,
-        entityType: "WELL",
-        measurementID: meta.measurementID,
-        name: key,
-        values: arr.slice()
-      });
+      payload.series.push({ description: meta.description, displayUnit: meta.displayUnit, entityName: c.name, entityType: "WELL", measurementID: meta.measurementID, name: key, values: arr.slice() });
     }
   }
   return payload;
-}
-function download(filename, obj){
-  const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-}
-
-/** Duplicate */
-function duplicateActiveWell(copies) {
-  const src = wells.find(x=>x.id===activeWellId);
-  if (!src) return;
-  const count = Math.max(1, Math.floor(copies || 1));
-  for (let i=0;i<count;i++) {
-    const name = nextAvailableWellName();
-    const id = uuid();
-    const tableCopy = src.tableData.map(row => row.slice());
-    const unitsCopy = { ...src.units };
-    wells.push({ id, name, tableData: tableCopy, units: unitsCopy });
-  }
-  renderTabs(); safeRenderAll();
 }
 
 /** Plotting */
@@ -790,10 +554,8 @@ function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
   const W = wBox - margin.left - margin.right;
   const H = hBox - margin.top - margin.bottom;
 
-  const xMin = 0;
-  const xMax = Math.max(...allPts.map(p=>p[0])) || 1;
-  const yMin = 0;
-  const yMaxRaw = Math.max(...allPts.map(p=>p[1])) || 1;
+  const xMin = 0, xMax = Math.max(...allPts.map(p=>p[0])) || 1;
+  const yMin = 0, yMaxRaw = Math.max(...allPts.map(p=>p[1])) || 1;
   const yMax = (yMaxRaw<=0?1:yMaxRaw*1.1);
 
   const xMap = x => margin.left + (xMax===xMin?0:((x-xMin)/(xMax-xMin)))*W;
@@ -827,10 +589,8 @@ function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
     if (!s.pts.length) continue;
     const d = s.pts.map((p,i)=>`${i?'L':'M'} ${xMap(p[0])} ${yMap(p[1])}`).join(' ');
     const path = makeSVG('path');
-    path.setAttribute('d', d);
-    path.setAttribute('fill','none');
-    path.setAttribute('stroke', s.color || '#3b82f6');
-    path.setAttribute('stroke-width','2');
+    path.setAttribute('d', d); path.setAttribute('fill','none');
+    path.setAttribute('stroke', s.color || '#3b82f6'); path.setAttribute('stroke-width','2');
     if (s.dash) path.setAttribute('stroke-dasharray', s.dash);
     svg.appendChild(path);
   }
@@ -880,10 +640,7 @@ function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
     for (const [xv,yv] of s.pts){
       if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
       const c = makeSVG('circle');
-      c.setAttribute('cx', xMap(xv));
-      c.setAttribute('cy', yMap(yv));
-      c.setAttribute('r', 3.2);
-      c.setAttribute('fill', s.color || '#3b82f6');
+      c.setAttribute('cx', xMap(xv)); c.setAttribute('cy', yMap(yv)); c.setAttribute('r', 3.2); c.setAttribute('fill', s.color || '#3b82f6');
       svg.appendChild(c);
     }
   }
@@ -894,34 +651,28 @@ function buildDiagnostics(plot){
   const msgs = [];
   const tolRel = 0.05;
   const {Days, InterceptDarcy, PI, BP_psi, BHP_psi, q_stbd} = plot;
-
   for (let i=0;i<Days.length;i++){
     const day = Days[i];
     const bp = BP_psi[i], bhp = BHP_psi[i];
     const q = q_stbd[i], pi = PI[i], itc = InterceptDarcy[i];
     if (![bp,bhp,q].every(Number.isFinite)) continue;
-
     const dp = Math.max(0, bp - bhp);
     if (bp < bhp) msgs.push(`t=${day}: BP < BHP → Δp<0 (check pressures).`);
-
     if (Number.isFinite(pi) && Number.isFinite(bp) && Number.isFinite(itc)){
       const expect = pi*bp, denom = Math.max(1, Math.abs(itc));
       const rel = Math.abs(itc - expect) / denom;
       if (rel > tolRel) msgs.push(`t=${day}: Intercept mismatch (>5%). I=${itc.toFixed(2)}, PI*BP=${expect.toFixed(2)}.`);
     }
-
     if (Number.isFinite(q) && Number.isFinite(itc) && q > itc*(1+tolRel))
       msgs.push(`t=${day}: q (${q.toFixed(2)}) > Intercept (${itc.toFixed(2)}).`);
-
     if (dp < 1e-6 && q > 0) msgs.push(`t=${day}: Δp≈0 but q>0 (check BHP/BP).`);
-
     if ((!Number.isFinite(pi) || pi===0) && q>0 && dp>0)
       msgs.push(`t=${day}: PI≈0 but q>0 and Δp>0 (check units).`);
   }
   return msgs;
 }
 
-/** Render all outputs */
+/** Render */
 function renderAllPlotsAndDiag(){
   const w = wells.find(x=>x.id===activeWellId);
   clearSVG(svgIntercept); clearSVG(svgPI); clearSVG(svgPIvsInt);
@@ -929,61 +680,50 @@ function renderAllPlotsAndDiag(){
 
   const comp = computeWellSeriesPhysical(w);
   if (!comp || !comp.__plot) {
-    emptyIntercept.style.display='block';
-    emptyPI.style.display='block';
-    emptyPIvsInt.style.display='block';
-    diagBox.innerHTML = `<span class="ok">No issues yet.</span>`;
-    return;
+    emptyIntercept.style.display='block'; emptyPI.style.display='block'; emptyPIvsInt.style.display='block';
+    diagBox.innerHTML = `<span class="ok">No issues yet.</span>`; return;
   }
 
-  const X = comp.__plot.Days || [];
+  const X = comp.__plot.CumOil || [];
   const YintD = comp.__plot.InterceptDarcy || [];
   const YintA = comp.__plot.InterceptA || [];
-  const YintU = comp.__plot.InterceptU || [];
   const Ypi = comp.__plot.PI || [];
   const YpiA = comp.__plot.PIA || [];
-  const YpiU = comp.__plot.PIU || [];
 
-  const ptsIntD = [], ptsIntA = [], ptsIntU = [];
-  const ptsPI = [], ptsPIA = [], ptsPIU = [];
-  const ptsScatterRaw = [], ptsFitScatterA = [], ptsFitScatterU = [];
+  const ptsIntD = [], ptsIntA = [];
+  const ptsPI = [], ptsPIA = [];
+  const ptsScatterRaw = [], ptsFitScatterA = [];
 
   for (let i=0;i<X.length; i++){
     const x = X[i];
-    const itcD = YintD[i], itcA = YintA[i], itcU = YintU[i];
-    const pi = Ypi[i], piA = YpiA[i], piU = YpiU[i];
+    const itcD = YintD[i], itcA = YintA[i];
+    const pi = Ypi[i], piA = YpiA[i];
     if (Number.isFinite(x) && Number.isFinite(itcD)) ptsIntD.push([x, itcD]);
     if (Number.isFinite(x) && Number.isFinite(itcA)) ptsIntA.push([x, itcA]);
-    if (Number.isFinite(x) && Number.isFinite(itcU)) ptsIntU.push([x, itcU]);
 
     if (Number.isFinite(x) && Number.isFinite(pi)) ptsPI.push([x, pi]);
     if (Number.isFinite(x) && Number.isFinite(piA)) ptsPIA.push([x, piA]);
-    if (Number.isFinite(x) && Number.isFinite(piU)) ptsPIU.push([x, piU]);
 
     if (Number.isFinite(itcD) && Number.isFinite(pi)) ptsScatterRaw.push([itcD, pi]);
     if (Number.isFinite(itcA) && Number.isFinite(piA)) ptsFitScatterA.push([itcA, piA]);
-    if (Number.isFinite(itcU) && Number.isFinite(piU)) ptsFitScatterU.push([itcU, piU]);
   }
 
   renderLineMulti(svgIntercept, [
     { pts: ptsIntD, color: '#3b82f6' },
-    { pts: ptsIntA, color: '#eab308' },
-    { pts: ptsIntU, color: '#22c55e' }
-  ], {xLabel:'Days', yLabel:'Intercept (STB/day)', emptyEl: emptyIntercept});
+    { pts: ptsIntA, color: '#eab308' }
+  ], {xLabel:'Cumulative Oil (STB)', yLabel:'Intercept (STB/day)', emptyEl: emptyIntercept});
 
   renderLineMulti(svgPI, [
     { pts: ptsPI, color: '#3b82f6' },
-    { pts: ptsPIA, color: '#eab308' },
-    { pts: ptsPIU, color: '#22c55e' }
-  ], {xLabel:'Days', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPI});
+    { pts: ptsPIA, color: '#eab308' }
+  ], {xLabel:'Cumulative Oil (STB)', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPI});
 
   renderScatterMulti(svgPIvsInt, [
     { pts: ptsScatterRaw, color: '#3b82f6' },
-    { pts: ptsFitScatterA, color: '#eab308' },
-    { pts: ptsFitScatterU, color: '#22c55e' }
+    { pts: ptsFitScatterA, color: '#eab308' }
   ], {xLabel:'Intercept (STB/day)', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPIvsInt});
 
-  const diags = buildDiagnostics({Days:X, InterceptDarcy:YintD, PI:Ypi, BP_psi:comp.__plot.BP_psi, BHP_psi:comp.__plot.BHP_psi, q_stbd:comp.__plot.q_stbd});
+  const diags = buildDiagnostics({Days:comp.__plot.Days, InterceptDarcy:YintD, PI:Ypi, BP_psi:comp.__plot.BP_psi, BHP_psi:comp.__plot.BHP_psi, q_stbd:comp.__plot.q_stbd});
   if (!diags.length){
     diagBox.innerHTML = `<span class="ok">All checks passed.</span>`;
   } else {
@@ -992,7 +732,48 @@ function renderAllPlotsAndDiag(){
   }
 }
 
-/** Safe render wrapper */
+/** Units wiring */
+function renderUnits(){ const w=wells.find(x=>x.id===activeWellId); if(!w) return;
+  u_time.value=w.units.time; u_bp.value=w.units.bp; u_bhp.value=w.units.bhp; u_oil.value=w.units.oil; u_gas.value=w.units.gas; u_wat.value=w.units.wat; }
+u_time.onchange=()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.time=u_time.value; safeRenderAll(); } };
+u_bp.onchange  =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.bp=u_bp.value; safeRenderAll(); } };
+u_bhp.onchange =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.bhp=u_bhp.value; safeRenderAll(); } };
+u_oil.onchange =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.oil=u_oil.value; safeRenderAll(); } };
+u_gas.onchange =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.gas=u_gas.value; safeRenderAll(); } };
+u_wat.onchange =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.wat=u_wat.value; safeRenderAll(); } };
+
+/** Download helper */
+function downloadFile(filename, obj){
+  try{
+    const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }catch(err){
+    alert("Download failed: "+err);
+  }
+}
+
+/** UI actions */
+addWellBtn.onclick = () => addWell();
+downloadBtn.onclick = () => downloadFile(`ipr_decline_curves_anchored.json`, buildJson());
+deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
+deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?")) resetAllWells(); };
+clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); safeRenderAll(); };
+duplicateBtn.onclick = () => { 
+  const n = Number(copyCountInput.value); 
+  const count = Math.max(1, Math.floor(Number.isFinite(n)?n:1));
+  const src = wells.find(x=>x.id===activeWellId);
+  if(!src) return;
+  for(let i=0;i<count;i++){
+    const name=nextAvailableWellName(); const id=uuid();
+    const tableCopy=src.tableData.map(row=>row.slice()); const unitsCopy={...src.units};
+    wells.push({id,name,tableData:tableCopy,units:unitsCopy});
+  }
+  renderTabs(); safeRenderAll();
+};
+
+/** Safe render + global error surfacing */
 function safeRenderAll(){
   try { renderAllPlotsAndDiag(); }
   catch (err){
@@ -1001,39 +782,6 @@ function safeRenderAll(){
     console.error(err);
   }
 }
-
-/** Units wiring */
-function renderUnits(){
-  const w=wells.find(x=>x.id===activeWellId); if (!w) return;
-  u_time.value = w.units.time;
-  u_bp.value = w.units.bp;
-  u_bhp.value = w.units.bhp;
-  u_oil.value = w.units.oil;
-  u_gas.value = w.units.gas;
-  u_wat.value = w.units.wat;
-}
-u_time.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.time = u_time.value; safeRenderAll(); } };
-u_bp.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.bp = u_bp.value; safeRenderAll(); } };
-u_bhp.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.bhp = u_bhp.value; safeRenderAll(); } };
-u_oil.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.oil = u_oil.value; safeRenderAll(); } };
-u_gas.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.gas = u_gas.value; safeRenderAll(); } };
-u_wat.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.wat = u_wat.value; safeRenderAll(); } };
-
-/** Export mode wiring */
-exportModeSel.onchange = () => {
-  exportMode = exportModeSel.value;
-  legendExportMode.textContent = exportMode === 'anchored' ? 'Anchored' : 'Unanchored';
-};
-
-/** UI actions */
-document.getElementById('addWellBtn').onclick = () => addWell();
-downloadBtn.onclick = () => download(`ipr_decline_curves_${exportMode}.json`, buildJson());
-deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
-deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?")) resetAllWells(); };
-clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); safeRenderAll(); };
-duplicateBtn.onclick = () => { const n = Number(copyCountInput.value); duplicateActiveWell(Number.isFinite(n) ? n : 1); };
-
-/** Global error surfacing */
 window.onerror = function(message, source, lineno, colno, error){
   const detail = (error && error.stack) ? error.stack : `${message} at ${source}:${lineno}:${colno}`;
   diagBox.innerHTML = `<div class="bad"><b>Runtime error:</b><pre style="white-space:pre-wrap">${detail}</pre></div>`;
@@ -1041,7 +789,6 @@ window.onerror = function(message, source, lineno, colno, error){
 
 /** Boot */
 addWell('P1');
-legendExportMode.textContent = 'Anchored';
 </script>
 </body>
 </html>
