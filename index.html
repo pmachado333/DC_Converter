@@ -1,4 +1,3 @@
-<!-- /index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,35 +16,28 @@
     .tabs{display:flex;flex-wrap:wrap;gap:6px;row-gap:8px;padding:10px 16px;margin-top:12px;border-bottom:1px solid var(--border);background:#0e1527}
     .tab{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);background:var(--card);border-radius:10px;cursor:pointer;white-space:nowrap;font-size:12px}
     .tab.active{outline:2px solid var(--accent)}.tab input{background:transparent;color:#e5e7eb;border:none;width:120px;font-weight:600;font-size:12px}.tab .x{font-weight:800;color:#94a3b8;cursor:pointer}
-
     .mtabs{display:flex;gap:8px;padding:10px 16px;background:#0b1220;border-bottom:1px solid var(--border)}
     .mtab{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1528;cursor:pointer;font-size:12px;color:#cbd5e1;opacity:.9}
     .mtab.active{outline:2px solid var(--accent);opacity:1}
-
     .wrap{padding:16px;display:flex;justify-content:center}.container{width:100%;max-width:980px}.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .controls{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;font-size:12px}.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-
     .units{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:8px;margin:10px 0 6px}
     .units label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted)}
     select,input[type="number"]{background:#0b1220;color:#e5e7eb;border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px}
     input[type="number"]{width:72px}
-
     table{width:100%;border-collapse:collapse;table-layout:fixed}
     thead th{position:sticky;top:0;background:#0b1220;z-index:1}
     th,td{border:1px solid #1f2937;padding:6px;text-align:left;vertical-align:top;font-size:12px;line-height:1.2}
     td[contenteditable="true"]{outline:none}td:focus{box-shadow:inset 0 0 0 2px var(--accent)}
-
     .plot-title{font-size:12px;color:var(--muted);margin-bottom:8px}
     .plot-wrap{width:100%;overflow:auto}.plot-empty{font-size:12px;color:var(--muted);padding:8px}
     .diag{font-size:12px;color:#eab308}.diag .ok{color:#22c55e}.diag .bad{color:#f87171}.diag ul{margin:6px 0 0 18px;padding:0}
     .legend{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:11px;color:#cbd5e1;flex-wrap:wrap}.legend .item{display:flex;gap:6px;align-items:center}.chip{width:14px;height:3px;border-radius:2px;display:inline-block}
-
     .spacer{flex:1}
     .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.15);cursor:pointer}
     .iconbtn:hover{background:rgba(255,255,255,.12)}
     .iconbtn svg{width:16px;height:16px;opacity:.9}
-
     .hidden{display:none !important}
   </style>
 </head>
@@ -63,6 +55,7 @@
 
     <div class="spacer"></div>
 
+    <!-- Discrete QC toggle (hidden-on-boot) -->
     <button class="iconbtn" id="qcToggleBtn" title="Toggle QC plots">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
@@ -71,11 +64,14 @@
     </button>
   </header>
 
+  <!-- Mode tabs -->
   <div class="mtabs" id="modeTabs">
     <div class="mtab active" data-mode="smoothing">Smoothing DC</div>
     <div class="mtab" data-mode="raw">Raw DC</div>
+    <div class="mtab" data-mode="clean">Clean DC</div>
   </div>
 
+  <!-- Well tabs -->
   <div class="tabs" id="tabs"></div>
 
   <div class="wrap">
@@ -157,13 +153,16 @@
         </div>
       </div>
 
+      <!-- Legend (hidden with QC) -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="legend mono">
           <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
           <div class="item"><span class="chip" style="background:#eab308"></span>Anchored Fit</div>
+          <div class="item"><span class="chip" style="background:#10b981"></span>Clean (Smoothed Raw)</div>
         </div>
       </div>
 
+      <!-- Plots (hidden with QC) -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">Intercept (q @ pwf=0) vs Cumulative Oil — STB/day</div>
         <div class="plot-wrap">
@@ -181,13 +180,14 @@
       </div>
 
       <div class="card qc-plot" style="margin-top:12px;">
-        <div class="plot-title mono">IPR vs Intercept — Scatter (Raw vs Anchored)</div>
+        <div class="plot-title mono">IPR vs Intercept — Scatter (Raw, Anchored, Clean)</div>
         <div class="plot-wrap">
           <svg id="plotPIvsInt" width="100%" height="300" viewBox="0 0 900 300" preserveAspectRatio="none"></svg>
           <div id="emptyPIvsInt" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
         </div>
       </div>
 
+      <!-- Diagnostics (hidden with QC) -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="plot-title mono">Diagnostics — Sanity Checks (Darcy IPR)</div>
         <div class="diag" id="diagBox"><span class="ok">No issues yet.</span></div>
@@ -211,11 +211,11 @@ const PSI_TO_KPA = 6.894757293168, BAR_TO_KPA = 100.0, MPA_TO_KPA = 1000.0;
 
 let wells = []; let activeWellId = null;
 
-/* modes + QC */
+/* Modes + QC toggle */
 let appMode = 'smoothing';
 let qcVisible = false;
 
-/** DOM refs */
+/** DOM */
 const modeTabsEl = document.getElementById('modeTabs');
 const tabsEl = document.getElementById('tabs');
 const bodyEl = document.getElementById('tableBody');
@@ -424,7 +424,7 @@ function bestAnchoredPiecewise_Weighted_withFixedEnds(X,Y,A0,W,fixedGlobalEnds){
   return {pred:enforceNonIncreasing(back)};
 }
 
-/** Tabs & wells */
+/** Well management */
 function defaultUnits(){ return { time:'d', bp:'kpa', bhp:'kpa', oil:'m3d', gas:'m3d', wat:'m3d' }; }
 function createWell(name){ return { id: uuid(), name, units: defaultUnits(), tableData: Array.from({length:30}, () => Array(WELL_COLS.length).fill('')) }; }
 function addWell(initialName){ const name=initialName ?? `P${wells.length+1}`; const w=createWell(name); wells.push(w); setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
@@ -500,14 +500,13 @@ function computeWellSeriesPhysical(well){
 
   const Xcum = CumOil.slice();
 
-  // 1) Intercept fit
+  // Anchored fits (unchanged)
   const interceptModel = bestAnchoredPiecewise_Unweighted(Xcum, INTERCEPT_DARCY, IntAnchor);
   const InterceptA = interceptModel.pred;
   const endsIntFiltered = interceptModel.ends;
   const validIntIdx = interceptModel.validIdx;
   const endsIntGlobal = endsIntFiltered.map(fi => validIntIdx[fi]);
 
-  // 2) PI weights from Δp
   const dpValid = dP.filter(Number.isFinite).filter(v=>v>0);
   const dpMed = dpValid.length ? dpValid.sort((a,b)=>a-b)[Math.floor(dpValid.length/2)] : 1;
   const wPI = dP.map(v=>{
@@ -516,7 +515,6 @@ function computeWellSeriesPhysical(well){
     return Math.min(4, Math.max(0.25, r));
   });
 
-  // 3) PI fit, sharing breakpoints
   const piForced = bestAnchoredPiecewise_Weighted_withFixedEnds(Xcum, PI, PIAnchor, wPI, endsIntGlobal);
   const PIA = piForced.pred;
 
@@ -544,12 +542,98 @@ function computeWellSeriesPhysical(well){
   };
 }
 
+/** --- Clean DC (Savitzky–Golay smoothing) --- */
+/* why: high-fidelity noise removal without biasing trend */
+function sgCoefficients(window, poly){
+  const m = (window-1)/2;
+  const X = [];
+  for(let i=-m;i<=m;i++){
+    const row=[]; for(let k=0;k<=poly;k++){ row.push(i**k); } X.push(row);
+  }
+  const Xt = transpose(X);
+  const XtX = multiply(Xt, X);
+  const invXtX = invert(XtX); // small (<= 6×6)
+  if(!invXtX) return null;
+  const A = multiply(invXtX, Xt);
+  return A[0]; // weights for value at center
+}
+function sgSmooth(y, window=7, poly=3){
+  const n = y.length;
+  if(n===0) return [];
+  // window must be odd and >= poly+2
+  window = Math.max(3, window|0); if(window%2===0) window+=1;
+  poly = Math.max(2, Math.min(poly|0, window-2));
+  const w = sgCoefficients(window, poly);
+  if(!w){ // fallback: simple moving average
+    const k=(window-1)/2; const out=new Array(n).fill(0);
+    for(let i=0;i<n;i++){
+      let s=0,c=0; for(let j=-k;j<=k;j++){ const idx=reflectIndex(i+j,n); s+=y[idx]; c++; }
+      out[i]=s/c;
+    }
+    return out;
+  }
+  const k = (window-1)/2;
+  const out = new Array(n).fill(0);
+  for(let i=0;i<n;i++){
+    let s=0;
+    for(let j=-k;j<=k;j++){ const idx=reflectIndex(i+j,n); s += w[j+k] * y[idx]; }
+    out[i]=s;
+  }
+  return out;
+}
+function reflectIndex(i, n){
+  // symmetric padding: [-1]->1, [n]->n-2
+  if(i<0) return -i;
+  if(i>=n) return (2*n-2) - i;
+  return i;
+}
+// tiny linear algebra
+function transpose(A){ return A[0].map((_,j)=>A.map(r=>r[j])); }
+function multiply(A,B){
+  const r=A.length, c=B[0].length, k=B.length;
+  const out=Array.from({length:r},()=>Array(c).fill(0));
+  for(let i=0;i<r;i++) for(let j=0;j<c;j++){ let s=0; for(let t=0;t<k;t++) s+=A[i][t]*B[t][j]; out[i][j]=s; }
+  return out;
+}
+function invert(M){
+  const n=M.length;
+  // build augmented [M | I]
+  const A=M.map((row,i)=>row.concat(Array.from({length:n},(_,j)=>i===j?1:0)));
+  // Gauss-Jordan
+  for(let i=0;i<n;i++){
+    // pivot
+    let p=i; for(let r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[p][i])) p=r;
+    if(Math.abs(A[p][i])<1e-12) return null;
+    if(p!==i) [A[p],A[i]]=[A[i],A[p]];
+    // normalize
+    const piv=A[i][i]; for(let j=0;j<2*n;j++) A[i][j]/=piv;
+    // eliminate
+    for(let r=0;r<n;r++) if(r!==i){
+      const f=A[r][i]; if(f===0) continue;
+      for(let j=0;j<2*n;j++) A[r][j]-=f*A[i][j];
+    }
+  }
+  // right block is inverse
+  return A.map(row=>row.slice(n));
+}
+
+/** Build Clean series from raw (for plots & export). */
+function buildCleanFromRaw(rawArr){
+  if(!rawArr || !rawArr.length) return [];
+  const out = rawArr.slice();
+  if(out.length>=2 && out[0]===0 && Number.isFinite(out[1]) && out[1]>0) out[0]=out[1]; // first ≠ 0
+  const sm = sgSmooth(out, 7, 3);
+  return sm;
+}
+
 /** Export JSON */
 function enforceLastZero(arr){ if(!arr||!arr.length) return arr; const out=arr.slice(); out[out.length-1]=0; return out; }
 
 function buildJson(mode){
   const isAnchored = (mode === 'smoothing');
-  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode: isAnchored ? "anchored" : "raw" };
+  const isRaw = (mode === 'raw');
+  const isClean = (mode === 'clean');
+  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode: isAnchored ? "anchored" : (isRaw ? "raw" : "clean") };
 
   for (const w of wells){
     const c = computeWellSeriesPhysical(w);
@@ -585,20 +669,14 @@ function buildJson(mode){
         name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH",
         values: PI_pp.slice()
       });
-    } else {
-      // RAW export: first cannot be zero; last must be zero
+    } else if (isRaw){
+      // Raw export: first ≠ 0, last = 0
       const INT_raw = sanitizeArray(c.__plot?.InterceptDarcy || []);
       const PI_raw  = sanitizeArray(c.__plot?.PI || []);
-
-      if (INT_raw.length >= 2 && INT_raw[0] === 0 && Number.isFinite(INT_raw[1]) && INT_raw[1] > 0) {
-        INT_raw[0] = INT_raw[1]; // make first non-zero
-      }
-      if (PI_raw.length >= 2 && PI_raw[0] === 0 && Number.isFinite(PI_raw[1]) && PI_raw[1] > 0) {
-        PI_raw[0] = PI_raw[1]; // make first non-zero
-      }
-
-      if (INT_raw.length >= 1) INT_raw[INT_raw.length - 1] = 0; // force last zero
-      if (PI_raw.length >= 1)  PI_raw[PI_raw.length - 1]  = 0; // force last zero
+      if (INT_raw.length>=2 && INT_raw[0]===0 && Number.isFinite(INT_raw[1]) && INT_raw[1]>0) INT_raw[0]=INT_raw[1];
+      if (PI_raw.length>=2  && PI_raw[0] ===0 && Number.isFinite(PI_raw[1])  && PI_raw[1] >0)  PI_raw[0] =PI_raw[1];
+      if (INT_raw.length>=1) INT_raw[INT_raw.length-1]=0;
+      if (PI_raw.length>=1)  PI_raw[PI_raw.length-1] =0;
 
       payload.series.push({
         description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
@@ -616,6 +694,35 @@ function buildJson(mode){
         name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH",
         values: PI_raw.slice()
       });
+    } else if (isClean){
+      // Clean export: Raw rules + smoothing, then force last = 0
+      let INT_base = sanitizeArray(c.__plot?.InterceptDarcy || []);
+      let PI_base  = sanitizeArray(c.__plot?.PI || []);
+      if (INT_base.length>=2 && INT_base[0]===0 && Number.isFinite(INT_base[1]) && INT_base[1]>0) INT_base[0]=INT_base[1];
+      if (PI_base.length>=2  && PI_base[0] ===0 && Number.isFinite(PI_base[1])  && PI_base[1] >0)  PI_base[0] =PI_base[1];
+
+      let INT_clean = sgSmooth(INT_base, 7, 3);
+      let PI_clean  = sgSmooth(PI_base , 7, 3);
+
+      if (INT_clean.length>=1) INT_clean[INT_clean.length-1]=0;
+      if (PI_clean.length>=1)  PI_clean[PI_clean.length-1] =0;
+
+      payload.series.push({
+        description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
+        displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
+        entityName: c.name, entityType:"WELL",
+        measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID,
+        name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH",
+        values: INT_clean.slice()
+      });
+      payload.series.push({
+        description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description,
+        displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
+        entityName: c.name, entityType:"WELL",
+        measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID,
+        name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH",
+        values: PI_clean.slice()
+      });
     }
   }
   return payload;
@@ -624,29 +731,23 @@ function buildJson(mode){
 /** Plotting */
 function clearSVG(svg){ while (svg.firstChild) svg.removeChild(svg.firstChild); }
 function makeSVG(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
-
 function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
   clearSVG(svg);
   const allPts = seriesList.flatMap(s=>s.pts);
   if (!allPts.length || allPts.length < 2) { if (emptyEl) emptyEl.style.display='block'; return; }
   if (emptyEl) emptyEl.style.display='none';
-
   const wBox = svg.viewBox.baseVal.width || 900, hBox = svg.viewBox.baseVal.height || 280;
   const margin = {left:60, right:16, top:16, bottom:36};
   const W = wBox - margin.left - margin.right;
   const H = hBox - margin.top - margin.bottom;
-
   const xMin = 0, xMax = Math.max(...allPts.map(p=>p[0])) || 1;
   const yMin = 0, yMaxRaw = Math.max(...allPts.map(p=>p[1])) || 1;
   const yMax = (yMaxRaw<=0?1:yMaxRaw*1.1);
-
   const xMap = x => margin.left + (xMax===xMin?0:((x-xMin)/(xMax-xMin)))*W;
   const yMap = y => margin.top + H - (yMax===yMin?0:((y-yMin)/(yMax-yMin)))*H;
-
   const axes = makeSVG('g');
   const xAxis = makeSVG('line'); xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', margin.top+H); xAxis.setAttribute('x2', margin.left+W); xAxis.setAttribute('y2', margin.top+H); xAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(xAxis);
   const yAxis = makeSVG('line'); yAxis.setAttribute('x1', margin.left); yAxis.setAttribute('y1', margin.top); yAxis.setAttribute('x2', margin.left); yAxis.setAttribute('y2', margin.top+H); yAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(yAxis);
-
   const xticks=5, yticks=5;
   for (let i=0;i<=xticks;i++){
     const v = xMin + (i/xticks)*(xMax-xMin);
@@ -661,12 +762,9 @@ function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
     const g = makeSVG('line'); g.setAttribute('x1',margin.left); g.setAttribute('y1',y); g.setAttribute('x2',margin.left+W); g.setAttribute('y2',y); g.setAttribute('stroke','#1f2937'); axes.appendChild(g);
     const lbl = makeSVG('text'); lbl.setAttribute('x',margin.left-8); lbl.setAttribute('y',y+4); lbl.setAttribute('text-anchor','end'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','#94a3b8'); lbl.textContent = Math.round(v).toString(); axes.appendChild(lbl);
   }
-
   const xlab = makeSVG('text'); xlab.setAttribute('x', margin.left+W/2); xlab.setAttribute('y', margin.top+H+32); xlab.setAttribute('text-anchor','middle'); xlab.setAttribute('font-size','12'); xlab.setAttribute('fill','#cbd5e1'); xlab.textContent = xLabel; axes.appendChild(xlab);
   const ylab = makeSVG('text'); ylab.setAttribute('x', 12); ylab.setAttribute('y', margin.top+H/2); ylab.setAttribute('transform', `rotate(-90 12 ${margin.top+H/2})`); ylab.setAttribute('text-anchor','middle'); ylab.setAttribute('font-size','12'); ylab.setAttribute('fill','#cbd5e1'); ylab.textContent = yLabel; axes.appendChild(ylab);
-
   svg.appendChild(axes);
-
   for (const s of seriesList){
     if (!s.pts.length) continue;
     const d = s.pts.map((p,i)=>`${i?'L':'M'} ${xMap(p[0])} ${yMap(p[1])}`).join(' ');
@@ -677,28 +775,22 @@ function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
     svg.appendChild(path);
   }
 }
-
 function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
   clearSVG(svg);
   const allPts = seriesList.flatMap(s=>s.pts);
   if (!allPts.length || allPts.length < 2) { if (emptyEl) emptyEl.style.display='block'; return; }
   if (emptyEl) emptyEl.style.display='none';
-
   const wBox = svg.viewBox.baseVal.width || 900, hBox = svg.viewBox.baseVal.height || 300;
   const margin = {left:70, right:16, top:16, bottom:42};
   const W = wBox - margin.left - margin.right;
   const H = hBox - margin.top - margin.bottom;
-
   const xMin = 0, xMax = Math.max(...allPts.map(p=>p[0])) || 1;
   const yMin = 0, yMax = Math.max(...allPts.map(p=>p[1])) || 1;
-
   const xMap = x => margin.left + (xMax===xMin?0:((x-xMin)/(xMax-xMin)))*W;
   const yMap = y => margin.top + H - (yMax===yMin?0:((y-yMin)/(yMax-yMin)))*H;
-
   const axes = makeSVG('g');
   const xAxis = makeSVG('line'); xAxis.setAttribute('x1',margin.left); xAxis.setAttribute('y1',margin.top+H); xAxis.setAttribute('x2',margin.left+W); xAxis.setAttribute('y2',margin.top+H); xAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(xAxis);
   const yAxis = makeSVG('line'); yAxis.setAttribute('x1',margin.left); yAxis.setAttribute('y1',margin.top); yAxis.setAttribute('x2',margin.left); yAxis.setAttribute('y2',margin.top+H); yAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(yAxis);
-
   const xticks=5, yticks=5;
   for (let i=0;i<=xticks;i++){
     const v = xMin + (i/xticks)*(xMax-xMin);
@@ -713,12 +805,9 @@ function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
     const g = makeSVG('line'); g.setAttribute('x1',margin.left); g.setAttribute('y1',y); g.setAttribute('x2',margin.left+W); g.setAttribute('y2',y); g.setAttribute('stroke','#1f2937'); axes.appendChild(g);
     const lbl = makeSVG('text'); lbl.setAttribute('x',margin.left-8); lbl.setAttribute('y',y+4); lbl.setAttribute('text-anchor','end'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','#94a3b8'); lbl.textContent = (Math.round(v*1000)/1000).toString(); axes.appendChild(lbl);
   }
-
   const xlab = makeSVG('text'); xlab.setAttribute('x', margin.left+W/2); xlab.setAttribute('y', margin.top+H+36); xlab.setAttribute('text-anchor','middle'); xlab.setAttribute('font-size','12'); xlab.setAttribute('fill','#cbd5e1'); xlab.textContent = xLabel; axes.appendChild(xlab);
   const ylab = makeSVG('text'); ylab.setAttribute('x', 14); ylab.setAttribute('y', margin.top+H/2); ylab.setAttribute('transform', `rotate(-90 14 ${margin.top+H/2})`); ylab.setAttribute('text-anchor','middle'); ylab.setAttribute('font-size','12'); ylab.setAttribute('fill','#cbd5e1'); ylab.textContent = yLabel; axes.appendChild(ylab);
-
   svg.appendChild(axes);
-
   for (const s of seriesList){
     for (const [xv,yv] of s.pts){
       if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
@@ -767,54 +856,63 @@ function renderAllPlotsAndDiag(){
     diagBox.innerHTML = `<span class="ok">No issues yet.</span>`; return;
   }
 
-  // Raw series (possibly adjusted for first sample in Raw mode)
-  let X = comp.__plot.CumOil || [];
-  let YintD = (comp.__plot.InterceptDarcy || []).slice();
-  let Ypi   = (comp.__plot.PI || []).slice();
+  // Raw arrays
+  const X = comp.__plot.CumOil || [];
+  const rawInt = sanitizeArray(comp.__plot.InterceptDarcy || []);
+  const rawPI  = sanitizeArray(comp.__plot.PI || []);
+  const fitInt = comp.__plot.InterceptA || [];
+  const fitPI  = comp.__plot.PIA || [];
 
-  if (appMode === 'raw') {
-    if (YintD.length >= 2 && YintD[0] === 0 && Number.isFinite(YintD[1]) && YintD[1] > 0) YintD[0] = YintD[1]; // plot first ≠ 0
-    if (Ypi.length   >= 2 && Ypi[0]   === 0 && Number.isFinite(Ypi[1])   && Ypi[1]   > 0) Ypi[0]   = Ypi[1];   // plot first ≠ 0
-    // Note: do NOT force last to zero in plots.
-  }
+  // Apply "first ≠ 0" to raw for display (not last=0)
+  const dispInt = rawInt.slice();
+  const dispPI  = rawPI.slice();
+  if (dispInt.length>=2 && dispInt[0]===0 && Number.isFinite(dispInt[1]) && dispInt[1]>0) dispInt[0]=dispInt[1];
+  if (dispPI.length >=2 && dispPI[0] ===0 && Number.isFinite(dispPI[1])  && dispPI[1] >0) dispPI[0] =dispPI[1];
 
-  const YintA = comp.__plot.InterceptA || [];
-  const YpiA  = comp.__plot.PIA || [];
+  // Clean display: first-fix + smoothing
+  const cleanInt = buildCleanFromRaw(rawInt);
+  const cleanPI  = buildCleanFromRaw(rawPI);
 
-  const ptsIntD = [], ptsIntA = [];
-  const ptsPI = [], ptsPIA = [];
-  const ptsScatterRaw = [], ptsFitScatterA = [];
+  // Build points
+  const ptsIntRaw=[], ptsIntFit=[], ptsIntClean=[];
+  const ptsPIRaw=[],  ptsPIFit=[],  ptsPIClean=[];
+  const ptsScatterRaw=[], ptsScatterFit=[], ptsScatterClean=[];
+  for(let i=0;i<X.length;i++){
+    const x=X[i];
+    const rI=dispInt[i], fI=fitInt[i], cI=cleanInt[i];
+    const rP=dispPI[i],  fP=fitPI[i],  cP=cleanPI[i];
+    if (Number.isFinite(x) && Number.isFinite(rI)) ptsIntRaw.push([x,rI]);
+    if (Number.isFinite(x) && Number.isFinite(fI)) ptsIntFit.push([x,fI]);
+    if (Number.isFinite(x) && Number.isFinite(cI)) ptsIntClean.push([x,cI]);
 
-  for (let i=0;i<X.length; i++){
-    const x = X[i];
-    const itcD = YintD[i], itcA = YintA[i];
-    const pi = Ypi[i], piA = YpiA[i];
-    if (Number.isFinite(x) && Number.isFinite(itcD)) ptsIntD.push([x, itcD]);
-    if (Number.isFinite(x) && Number.isFinite(itcA)) ptsIntA.push([x, itcA]);
+    if (Number.isFinite(x) && Number.isFinite(rP)) ptsPIRaw.push([x,rP]);
+    if (Number.isFinite(x) && Number.isFinite(fP)) ptsPIFit.push([x,fP]);
+    if (Number.isFinite(x) && Number.isFinite(cP)) ptsPIClean.push([x,cP]);
 
-    if (Number.isFinite(x) && Number.isFinite(pi)) ptsPI.push([x, pi]);
-    if (Number.isFinite(x) && Number.isFinite(piA)) ptsPIA.push([x, piA]);
-
-    if (Number.isFinite(itcD) && Number.isFinite(pi)) ptsScatterRaw.push([itcD, pi]);
-    if (Number.isFinite(itcA) && Number.isFinite(piA)) ptsFitScatterA.push([itcA, piA]);
+    if (Number.isFinite(rI) && Number.isFinite(rP)) ptsScatterRaw.push([rI,rP]);
+    if (Number.isFinite(fI) && Number.isFinite(fP)) ptsScatterFit.push([fI,fP]);
+    if (Number.isFinite(cI) && Number.isFinite(cP)) ptsScatterClean.push([cI,cP]);
   }
 
   renderLineMulti(svgIntercept, [
-    { pts: ptsIntD, color: '#3b82f6' },
-    { pts: ptsIntA, color: '#eab308' }
+    { pts: ptsIntRaw,   color: '#3b82f6' },
+    { pts: ptsIntFit,   color: '#eab308' },
+    { pts: ptsIntClean, color: '#10b981' }
   ], {xLabel:'Cumulative Oil (STB)', yLabel:'Intercept (STB/day)', emptyEl: emptyIntercept});
 
   renderLineMulti(svgPI, [
-    { pts: ptsPI, color: '#3b82f6' },
-    { pts: ptsPIA, color: '#eab308' }
+    { pts: ptsPIRaw,   color: '#3b82f6' },
+    { pts: ptsPIFit,   color: '#eab308' },
+    { pts: ptsPIClean, color: '#10b981' }
   ], {xLabel:'Cumulative Oil (STB)', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPI});
 
   renderScatterMulti(svgPIvsInt, [
-    { pts: ptsScatterRaw, color: '#3b82f6' },
-    { pts: ptsFitScatterA, color: '#eab308' }
+    { pts: ptsScatterRaw,   color: '#3b82f6' },
+    { pts: ptsScatterFit,   color: '#eab308' },
+    { pts: ptsScatterClean, color: '#10b981' }
   ], {xLabel:'Intercept (STB/day)', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPIvsInt});
 
-  const diags = buildDiagnostics({Days:comp.__plot.Days, InterceptDarcy:YintD, PI:Ypi, BP_psi:comp.__plot.BP_psi, BHP_psi:comp.__plot.BHP_psi, q_stbd:comp.__plot.q_stbd});
+  const diags = buildDiagnostics({Days:comp.__plot.Days, InterceptDarcy:dispInt, PI:dispPI, BP_psi:comp.__plot.BP_psi, BHP_psi:comp.__plot.BHP_psi, q_stbd:comp.__plot.q_stbd});
   if (!diags.length){
     diagBox.innerHTML = `<span class="ok">All checks passed.</span>`;
   } else {
@@ -850,13 +948,14 @@ function updateModeUI(){
   Array.from(modeTabsEl.querySelectorAll('.mtab')).forEach(el=>{
     el.classList.toggle('active', el.dataset.mode === appMode);
   });
-  downloadBtn.textContent = appMode === 'smoothing' ? 'Download JSON (Anchored)' : 'Download JSON (Raw)';
+  const label = appMode==='smoothing' ? 'Download JSON (Anchored)' : (appMode==='raw' ? 'Download JSON (Raw)' : 'Download JSON (Clean)');
+  downloadBtn.textContent = label;
 }
 modeTabsEl.addEventListener('click', (e)=>{
   const t = e.target.closest('.mtab');
   if(!t) return;
   const mode = t.dataset.mode;
-  if (mode && (mode === 'smoothing' || mode === 'raw')){
+  if (mode && (mode === 'smoothing' || mode === 'raw' || mode==='clean')){
     appMode = mode;
     updateModeUI();
   }
@@ -872,9 +971,10 @@ qcToggleBtn.onclick = () => { qcVisible = !qcVisible; applyQcVisibility(); };
 /** UI actions */
 addWellBtn.onclick = () => addWell();
 downloadBtn.onclick = () => {
-  const mode = appMode;
-  const data = buildJson(mode);
-  const fname = mode === 'smoothing' ? 'ipr_decline_curves_anchored.json' : 'ipr_decline_curves_raw.json';
+  const data = buildJson(appMode);
+  const fname = appMode === 'smoothing' ? 'ipr_decline_curves_anchored.json'
+              : appMode === 'raw'       ? 'ipr_decline_curves_raw.json'
+              :                           'ipr_decline_curves_clean.json';
   downloadFile(fname, data);
 };
 deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
@@ -910,7 +1010,7 @@ window.onerror = function(message, source, lineno, colno, error){
 /** Boot */
 updateModeUI();
 addWell('P1');
-applyQcVisibility(); // start hidden
+applyQcVisibility(); // plots/legend/diagnostics start hidden
 </script>
 </body>
 </html>
