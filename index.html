@@ -6,7 +6,7 @@
   <title>IXFM Decline Curve Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --brand:#22c55e; --accent:#3b82f6; --danger:#ef4444; --border:#1f2937; --slb:#003366; --amber:#eab308; }
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --brand:#22c55e; --accent:#3b82f6; --danger:#ef4444; --border:#1f2937; --slb:#003366; --amber:#eab308; --green:#22c55e; }
     * { box-sizing:border-box }
     body { margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; background:var(--bg); color:var(--text) }
     header { padding:14px 16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; border-bottom:1px solid var(--border); position:sticky; top:0; background: linear-gradient(180deg, var(--slb) 0%, #012a52 100%); color:#fff; z-index:2; }
@@ -46,9 +46,11 @@
     .diag .ok { color:#22c55e }
     .diag .bad { color:#f87171 }
     .diag ul { margin:6px 0 0 18px; padding:0 }
-    .legend { display:flex; gap:12px; align-items:center; margin-top:6px; font-size:11px; color:#cbd5e1 }
+    .legend { display:flex; gap:12px; align-items:center; margin-top:6px; font-size:11px; color:#cbd5e1; flex-wrap:wrap }
     .legend .item { display:flex; gap:6px; align-items:center }
     .chip { width:14px; height:3px; border-radius:2px; display:inline-block }
+    .export { display:flex; align-items:center; gap:8px }
+    .export label { font-size:11px; opacity:.9 }
   </style>
 </head>
 <body>
@@ -58,6 +60,13 @@
       <div class="subtitle">Prototype Version</div>
     </div>
     <button class="btn dark" id="addWellBtn">+ Add Well</button>
+    <div class="export">
+      <label class="hint">Export:</label>
+      <select id="exportMode">
+        <option value="anchored" selected>Anchored (max at t0)</option>
+        <option value="unanchored">Unanchored (best exp/hyp)</option>
+      </select>
+    </div>
     <button class="btn brand" id="downloadBtn">Download JSON</button>
     <button class="btn danger" id="deleteAllBtn">Delete All Wells</button>
     <span class="hint">Tip: paste from Excel; rows auto-expand.</span>
@@ -80,7 +89,7 @@
         </div>
 
         <div class="units">
-          <label title="Time in days since start">
+          <label>
             Time Unit
             <select id="u_time">
               <option value="d">days</option>
@@ -89,7 +98,7 @@
               <option value="y365">years (365 d)</option>
             </select>
           </label>
-          <label title="WBP9: 9-point well-block average pressure near the well">
+          <label>
             Block P Unit
             <select id="u_bp">
               <option value="kpa">kPa</option>
@@ -98,7 +107,7 @@
               <option value="psi">psi</option>
             </select>
           </label>
-          <label title="WBHP: flowing bottom-hole pressure (reference depth)">
+          <label>
             BHP Unit
             <select id="u_bhp">
               <option value="kpa">kPa</option>
@@ -107,7 +116,7 @@
               <option value="psi">psi</option>
             </select>
           </label>
-          <label title="WOPR: oil production rate at surface conditions">
+          <label>
             Oil Rate Unit
             <select id="u_oil">
               <option value="m3d">m³/day</option>
@@ -115,7 +124,7 @@
               <option value="m3h">m³/hour</option>
             </select>
           </label>
-          <label title="WGPR: gas production rate at surface conditions">
+          <label>
             Gas Rate Unit
             <select id="u_gas">
               <option value="m3d">m³/day</option>
@@ -123,7 +132,7 @@
               <option value="mmscf">MMSCF/day</option>
             </select>
           </label>
-          <label title="WWPR: water production rate at surface conditions">
+          <label>
             Water Rate Unit
             <select id="u_wat">
               <option value="m3d">m³/day</option>
@@ -137,12 +146,12 @@
           <table>
             <thead>
               <tr>
-                <th title="Time in days since start">Time</th>
-                <th title="WBP9: well-block pressure near the well">Well Block Pressure - 9P</th>
-                <th title="WBHP: flowing bottom-hole pressure">Bottom-hole Pressure</th>
-                <th title="WOPR: oil production rate (surface)">Oil Rate</th>
-                <th title="WGPR: gas production rate (surface)">Gas Rate</th>
-                <th title="WWPR: water production rate (surface)">Water Rate</th>
+                <th>Time</th>
+                <th>Well Block Pressure - 9P</th>
+                <th>Bottom-hole Pressure</th>
+                <th>Oil Rate</th>
+                <th>Gas Rate</th>
+                <th>Water Rate</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -153,12 +162,14 @@
       <div class="card" style="margin-top:12px;">
         <div class="legend mono">
           <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
-          <div class="item"><span class="chip" style="background:#a78bfa"></span>Reconstructed (TLS)</div>
+          <div class="item"><span class="chip" style="background:#eab308"></span>Anchored Fit</div>
+          <div class="item"><span class="chip" style="background:#22c55e"></span>Unanchored Fit</div>
+          <div class="item"><span class="chip" style="background:#64748b"></span>Export mode → <span id="legendExportMode">Anchored</span></div>
         </div>
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="plot-title mono">Intercept (q @ pwf=0) vs Days — STB/d</div>
+        <div class="plot-title mono">Intercept (q @ pwf=0) vs Days — STB/day</div>
         <div class="plot-wrap">
           <svg id="plotIntercept" width="100%" height="280" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
           <div id="emptyIntercept" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
@@ -166,7 +177,7 @@
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="plot-title mono">IPR (Productivity Index) vs Days — (STB/d)/psi</div>
+        <div class="plot-title mono">IPR (Productivity Index) vs Days — STB/(day.psi)</div>
         <div class="plot-wrap">
           <svg id="plotPI" width="100%" height="280" viewBox="0 0 900 280" preserveAspectRatio="none"></svg>
           <div id="emptyPI" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
@@ -174,7 +185,7 @@
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="plot-title mono">IPR vs Intercept — Scatter (raw vs TLS recon)</div>
+        <div class="plot-title mono">IPR vs Intercept — Scatter (Raw vs Fits)</div>
         <div class="plot-wrap">
           <svg id="plotPIvsInt" width="100%" height="300" viewBox="0 0 900 300" preserveAspectRatio="none"></svg>
           <div id="emptyPIvsInt" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
@@ -193,27 +204,36 @@
 <script>
 /** Constants & state */
 const WELL_COLS = ["Time","Well Block Pressure - 9P","Bottom-hole Pressure","Oil Rate","Gas Rate","Water Rate"];
+
+/* Keep these EXACT for export */
 const SERIES_META = {
   OIL_PRODUCTION_CUML: { description:"Oil production cumulative rate", displayUnit:"STB", measurementID:"Liquid_Production_Volume" },
   GAS_OIL_RATIO: { description:"Gas Oil Ratio", displayUnit:"MSCF/STB", measurementID:"Gas_To_Liquid_Ratio" },
   WATER_CUT: { description:"Water Cut", displayUnit:"STB/STB", measurementID:"Liquid_To_Liquid_Ratio" },
-  INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR intercept", displayUnit:"STB/d", measurementID:"Liquid_Flowrate" },
-  SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR scaling factor (PI)", displayUnit:"(STB/d)/psi", measurementID:"Liquid_Productivity_Index" }
+  INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR intercept", displayUnit:"STB/day", measurementID:"Liquid_Flowrate" },
+  SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: { description:"Oil phase IPR scaling factor", displayUnit:"STB/(day.psi)", measurementID:"Liquid_Productivity_Index" }
 };
+
+/* Unit factors */
 const M3_TO_STB = 6.28981077;
 const STB_TO_M3 = 1 / M3_TO_STB;
-const M3_TO_MMSCF = 0.0000353146667;
+/* Correct: m³ → MMSCF = 35.3146667 / 1,000,000 */
+const M3_TO_MMSCF = 3.53146667e-5 / 1000;
+
 const PSI_TO_KPA = 6.894757293168;
 const BAR_TO_KPA = 100.0;
 const MPA_TO_KPA = 1000.0;
 
 let wells = [];
 let activeWellId = null;
+let exportMode = 'anchored';
 
 /** DOM refs */
 const tabsEl = document.getElementById('tabs');
 const bodyEl = document.getElementById('tableBody');
 const addWellBtn = document.getElementById('addWellBtn');
+const exportModeSel = document.getElementById('exportMode');
+const legendExportMode = document.getElementById('legendExportMode');
 const downloadBtn = document.getElementById('downloadBtn');
 const deleteAllBtn = document.getElementById('deleteAllBtn');
 const deleteWellBtn = document.getElementById('deleteWellBtn');
@@ -263,8 +283,8 @@ function applyFactorArray(arr, factor){ return arr.map(v => Number.isFinite(v) ?
 /** Tabs & wells */
 function defaultUnits(){ return { time:'d', bp:'kpa', bhp:'kpa', oil:'m3d', gas:'m3d', wat:'m3d' }; }
 function createWell(name){ return { id: uuid(), name, units: defaultUnits(), tableData: Array.from({length:30}, () => Array(WELL_COLS.length).fill('')) }; }
-function addWell(initialName) { const name = initialName ?? `P${wells.length+1}`; const well = createWell(name); wells.push(well); setActiveWell(well.id); renderTabs(); renderTable(); renderUnits(); renderAllPlotsAndDiag(); }
-function deleteWell(id) { wells = wells.filter(w=>w.id!==id); if (!wells.length) addWell('P1'); setActiveWell(wells[0].id); renderTabs(); renderTable(); renderUnits(); renderAllPlotsAndDiag(); }
+function addWell(initialName) { const name = initialName ?? `P${wells.length+1}`; const well = createWell(name); wells.push(well); setActiveWell(well.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
+function deleteWell(id) { wells = wells.filter(w=>w.id!==id); if (!wells.length) addWell('P1'); setActiveWell(wells[0].id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
 function deleteWellWithMaybeConfirm(id) { const w = wells.find(x=>x.id===id); if (!w) return; if (isWellEmpty(w)) { deleteWell(id); } else { if (confirm(`Delete well "${w.name}"?`)) deleteWell(id); } }
 function resetAllWells() { wells = []; addWell('P1'); }
 function setActiveWell(id) { activeWellId = id; activeWellNameEl.textContent = wells.find(w=>w.id===id)?.name ?? ''; }
@@ -275,7 +295,7 @@ function renderTabs() {
   wells.forEach(w=>{
     const tab=document.createElement('div');
     tab.className='tab'+(w.id===activeWellId?' active':''); 
-    tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); renderAllPlotsAndDiag(); };
+    tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); };
     const input=document.createElement('input'); input.value=w.name; input.oninput=e=>renameWell(w.id,e.target.value);
     const close=document.createElement('span'); close.className='x'; close.textContent='×'; close.onclick=(ev)=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); };
     tab.appendChild(input); tab.appendChild(close); tabsElLoc.appendChild(tab);
@@ -304,7 +324,7 @@ function onCellInput(e){
   const td=e.currentTarget; const r=+td.dataset.row, c=+td.dataset.col;
   const w=wells.find(x=>x.id===activeWellId);
   w.tableData[r][c]=td.textContent;
-  renderAllPlotsAndDiag();
+  safeRenderAll();
 }
 function onCellPaste(e){
   e.preventDefault();
@@ -325,43 +345,171 @@ function onCellPaste(e){
       if (cell) cell.textContent=cols[j];
     }
   }
-  renderAllPlotsAndDiag();
+  safeRenderAll();
 }
 
 /** Math utils */
 function safeDiv(a,b){ return (Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(b)>0)?(a/b):NaN; }
 function cumsum(arr){ const out=[]; let s=0; for (const v of arr){ const x=Number.isFinite(v)?v:0; s+=x; out.push(s) } return out; }
-const clamp01 = (x)=> Math.max(0, Math.min(1, x));
+function median(arr){ const v=arr.filter(Number.isFinite).slice().sort((a,b)=>a-b); const n=v.length; if(!n) return NaN; const m=Math.floor(n/2); return n%2? v[m] : 0.5*(v[m-1]+v[m]); }
 
-/** TLS fit helpers */
-function tlsFit(xs, ys){
-  const n = xs.length;
-  if (n < 2) return null;
-  let mx=0, my=0;
-  for (let i=0;i<n;i++){ mx += xs[i]; my += ys[i]; }
-  mx /= n; my /= n;
-  let sxx=0, syy=0, sxy=0;
-  for (let i=0;i<n;i++){
-    const dx = xs[i]-mx, dy = ys[i]-my;
-    sxx += dx*dx; syy += dy*dy; sxy += dx*dy;
+/** OLS for PI vs Intercept (scatter only) */
+function olsYonX(xs, ys){
+  let n=0, sx=0, sy=0, sxx=0, sxy=0;
+  for (let i=0;i<xs.length;i++){
+    const x=xs[i], y=ys[i];
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+    n++; sx+=x; sy+=y; sxx+=x*x; sxy+=x*y;
   }
-  sxx /= n; syy /= n; sxy /= n;
-  const theta = 0.5 * Math.atan2(2*sxy, sxx - syy);
-  const ux = Math.cos(theta), uy = Math.sin(theta);
-  return { mx, my, ux, uy };
+  const denom = n*sxx - sx*sx;
+  if (n<2 || Math.abs(denom)<1e-12) return null;
+  const m = (n*sxy - sx*sy) / denom;
+  const b = (sy - m*sx) / n;
+  return { m, b };
 }
-function tlsProjectPoint(fit, x, y){
-  const dx = x - fit.mx, dy = y - fit.my;
-  const t = fit.ux*dx + fit.uy*dy;
-  return [ fit.mx + t*fit.ux, fit.my + t*fit.uy ];
+
+/** Decline fits */
+function fitExpDecay(T, Y){
+  const t=[], lnY=[];
+  for (let i=0;i<T.length;i++){
+    const ti=T[i], yi=Y[i];
+    if (Number.isFinite(ti) && Number.isFinite(yi) && yi>0){ t.push(ti); lnY.push(Math.log(yi)); }
+  }
+  const n=t.length; if (n<2) return null;
+  let sx=0, sxx=0, sy=0, sxy=0;
+  for (let i=0;i<n;i++){ const x=t[i], y=lnY[i]; sx+=x; sxx+=x*x; sy+=y; sxy+=x*y; }
+  const denom = (n*sxx - sx*sx);
+  if (Math.abs(denom) < 1e-12) return null;
+  const c = (n*sxy - sx*sy) / denom;
+  const a = (sy - c*sx) / n;
+  let A = Math.exp(a);
+  let b = -c;
+  if (!Number.isFinite(A) || A<=0) return null;
+  if (!Number.isFinite(b) || b<=0) b = 1e-8;
+  const predict = (ti)=> Math.max(0, A * Math.exp(-b * Math.max(0,ti)));
+  let sse=0;
+  for (let i=0;i<n;i++){ const e = (predict(t[i]) - Math.exp(lnY[i])); sse += e*e; }
+  const k=2; const aic = n>0 ? (n*Math.log((sse/n)||1e-18) + 2*k) : Infinity;
+  return { type:'exp', A, b, predict, sse, n, aic };
 }
-function tlsYgivenX(fit, x){
-  const EPS = 1e-12;
-  if (!fit) return NaN;
-  if (Math.abs(fit.ux) < EPS) return fit.my;
-  const m = fit.uy / fit.ux;
-  const b = fit.my - m*fit.mx;
-  return m*x + b;
+function fitHyperbolic(T, Y){
+  const t=[], y=[];
+  for (let i=0;i<T.length;i++){
+    const ti=T[i], yi=Y[i];
+    if (Number.isFinite(ti) && Number.isFinite(yi) && yi>0){ t.push(Math.max(0,ti)); y.push(yi); }
+  }
+  const npts = t.length;
+  if (npts < 3) return null;
+
+  const tmax = Math.max(...t);
+  const tspan = Math.max(1e-9, tmax);
+  const logspace = (a,b,k)=>{ const out=[]; const la=Math.log(a), lb=Math.log(b); for (let i=0;i<k;i++){ const u=i/(k-1); out.push(Math.exp(la + (lb-la)*u)); } return out; };
+
+  const nCand = [0.3,0.5,0.7,1.0,1.2,1.5];
+  const bCand = logspace(1e-6, 10/tspan, 18);
+
+  let best=null;
+  for (const n of nCand){
+    for (const b of bCand){
+      let sumBy=0, sumB2=0;
+      for (let i=0;i<npts;i++){
+        const base = 1/Math.pow(1 + b*t[i], n);
+        sumBy += base * y[i];
+        sumB2 += base * base;
+      }
+      let A = (sumB2>0) ? (sumBy / sumB2) : 0;
+      if (!Number.isFinite(A) || A<=0) continue;
+      let sse=0;
+      for (let i=0;i<npts;i++){
+        const yi = A / Math.pow(1 + b*t[i], n);
+        const e = yi - y[i];
+        sse += e*e;
+      }
+      if (!best || sse < best.sse){
+        const predict = (ti)=> Math.max(0, A / Math.pow(1 + b*Math.max(0,ti), n));
+        const k=3;
+        const aic = npts>0 ? (npts*Math.log((sse/npts)||1e-18) + 2*k) : Infinity;
+        best = { type:'hyperbolic', A, b, n, predict, sse, n:npts, aic };
+      }
+    }
+  }
+  return best;
+}
+/* Anchored helpers */
+function sumsXY(xs, ys){
+  let n=0, sx2=0, sxy=0;
+  for (let i=0;i<xs.length;i++){
+    const x=xs[i], y=ys[i];
+    if (Number.isFinite(x) && Number.isFinite(y)){ n++; sx2+=x*x; sxy+=x*y; }
+  }
+  return { n, sx2, sxy };
+}
+function fitExpAnchored(A0, T, Y, t0){
+  const x=[], z=[];
+  for (let i=0;i<T.length;i++){
+    const yi = Y[i], ti = T[i];
+    if (Number.isFinite(ti) && Number.isFinite(yi) && yi>0){
+      const dx = Math.max(0, ti - t0);
+      x.push(dx);
+      z.push(Math.log(A0/yi));
+    }
+  }
+  const S = sumsXY(x, z);
+  if (S.n < 2 || S.sx2 <= 0) return null;
+  let b = S.sxy / S.sx2;
+  if (!Number.isFinite(b) || b <= 0) b = 1e-8;
+  const predict = (t) => Math.max(0, A0 * Math.exp(-b * Math.max(0, t - t0)));
+  let sse=0, n=0;
+  for (let i=0;i<T.length;i++){
+    const yi = Y[i], ti = T[i];
+    if (Number.isFinite(yi) && Number.isFinite(ti)){
+      const e = predict(ti) - yi; sse += e*e; n++;
+    }
+  }
+  const k=1;
+  const aic = n>0 ? (n*Math.log((sse/n)||1e-18) + 2*k) : Infinity;
+  return { type:'exp', A:A0, b, t0, predict, sse, n, aic };
+}
+function fitHypAnchored(A0, T, Y, t0){
+  const tOff = T.map(t => Number.isFinite(t) ? Math.max(0, t - t0) : NaN);
+  const valid = []; for (let i=0;i<T.length;i++){ if (Number.isFinite(tOff[i]) && Number.isFinite(Y[i]) && Y[i]>0) valid.push(i); }
+  if (valid.length < 3) return null;
+
+  const tspan = Math.max(1e-9, Math.max(...valid.map(i => tOff[i])));
+  const logspace = (a,b,k)=>{ const out=[]; const la=Math.log(a), lb=Math.log(b); for (let i=0;i<k;i++){ const u=i/(k-1); out.push(Math.exp(la + (lb-la)*u)); } return out; };
+  const nCand = [0.3,0.5,0.7,1.0,1.2,1.5];
+  const bCand = logspace(1e-6, 10/tspan, 18);
+
+  let best = null;
+  for (const n of nCand){
+    for (const b of bCand){
+      let sse = 0, npts=0;
+      for (const i of valid){
+        const ti = tOff[i];
+        const yi = Y[i];
+        const yhat = A0 / Math.pow(1 + b*ti, n);
+        const e = yhat - yi;
+        sse += e*e; npts++;
+      }
+      if (!best || sse < best.sse){
+        const predict = (t) => Math.max(0, A0 / Math.pow(1 + b*Math.max(0, t - t0), n));
+        const k=2;
+        const aic = npts>0 ? (npts*Math.log((sse/npts)||1e-18) + 2*k) : Infinity;
+        best = { type:'hyperbolic', A:A0, b, n, t0, predict, sse, n:npts, aic };
+      }
+    }
+  }
+  return best;
+}
+function enforceNonIncreasing(arr){
+  const out = arr.slice();
+  for (let i=1;i<out.length;i++){
+    if (!Number.isFinite(out[i-1])) continue;
+    if (!Number.isFinite(out[i])) { out[i]=out[i-1]; continue; }
+    if (out[i] > out[i-1]) out[i] = out[i-1];
+    if (out[i] < 0) out[i] = 0;
+  }
+  return out;
 }
 
 /** Core computation */
@@ -395,11 +543,11 @@ function computeWellSeriesPhysical(well){
   const GAS_m3d = applyFactorArray(GAS_raw.slice(0,L), fGas);
   const WAT_m3d = applyFactorArray(WAT_raw.slice(0,L), fWat);
 
-  const oil_stb = OIL_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*6.28981077) : NaN);
-  const wat_stb = WAT_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*6.28981077) : NaN);
-  const gas_mmscf = GAS_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*0.0000353146667) : NaN);
-  const BP_psi = BP_kPa.map(v=>Number.isFinite(v)? v/6.894757293168 : NaN);
-  const BHP_psi = BHP_kPa.map(v=>Number.isFinite(v)? v/6.894757293168 : NaN);
+  const oil_stb = OIL_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*M3_TO_STB) : NaN);
+  const wat_stb = WAT_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*M3_TO_STB) : NaN);
+  const gas_mmscf = GAS_m3d.map(v=>Number.isFinite(v)? Math.max(0, v*M3_TO_MMSCF) : NaN);
+  const BP_psi = BP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);
+  const BHP_psi = BHP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);
 
   const GOR = oil_stb.map((o,i)=>safeDiv(gas_mmscf[i], o));
   const WATER_FRAC = oil_stb.map((o,i)=>{
@@ -434,43 +582,87 @@ function computeWellSeriesPhysical(well){
     INTERCEPT_DARCY[0] = INTERCEPT_DARCY[1];
   }
 
-  // TLS fit for (Intercept vs PI)
-  const EPS_Q = 1e-9, EPS_DP = 1e-6;
-  const fitXs = [], fitYs = [];
-  for (let i=0;i<L;i++){
-    const xi = INTERCEPT_DARCY[i];
-    const yi = PI[i];
-    if (!Number.isFinite(xi) || !Number.isFinite(yi)) continue;
-    const q = oil_stb[i];
-    const dp = dP[i];
-    if (i===0 && Number.isFinite(q) && Math.abs(q) <= EPS_Q) continue; // avoid zero-flow first row
-    if (Number.isFinite(dp) && Math.abs(dp) <= EPS_DP) continue;       // unstable Δp
-    fitXs.push(xi);
-    fitYs.push(yi);
-  }
-  let fit = null;
-  if (fitXs.length >= 2) fit = tlsFit(fitXs, fitYs);
+  const intVals = INTERCEPT_DARCY.filter(v=>Number.isFinite(v) && v>=0);
+  const piVals  = PI.filter(v=>Number.isFinite(v) && v>=0);
+  const IntAnchor = intVals.length ? Math.max(...intVals) : 0;
+  const PIAnchor  = piVals.length ? Math.max(...piVals) : 0;
 
-  let INTERCEPT_TLS = INTERCEPT_DARCY.slice();
-  let PI_TLS = PI.slice();
-  if (fit){
-    for (let i=0;i<L;i++){
-      const xi = INTERCEPT_DARCY[i];
-      const yi = PI[i];
-      if (!Number.isFinite(xi) || !Number.isFinite(yi)) continue;
-      if (i===0 && Number.isFinite(oil_stb[0]) && Math.abs(oil_stb[0])<=EPS_Q) continue;
-      const pr = tlsProjectPoint(fit, xi, yi);
-      INTERCEPT_TLS[i] = pr[0];
-      PI_TLS[i] = pr[1];
-    }
-    if (Number.isFinite(oil_stb[0]) && Math.abs(oil_stb[0])<=EPS_Q){
-      const xs = INTERCEPT_TLS.filter(Number.isFinite);
-      const xMax = xs.length ? Math.max.apply(null, xs) : INTERCEPT_DARCY[0];
-      const yAtXmax = tlsYgivenX(fit, xMax);
-      if (Number.isFinite(xMax)) INTERCEPT_TLS[0] = xMax;
-      if (Number.isFinite(yAtXmax)) PI_TLS[0] = Math.max(0, yAtXmax);
+  let t0 = 0; for (let i=0;i<Days.length;i++){ if (Number.isFinite(Days[i])) { t0 = Days[i]; break; } }
+
+  const T = [], I = [];
+  for (let i=0;i<INTERCEPT_DARCY.length;i++){
+    const t=Days[i], y=INTERCEPT_DARCY[i];
+    if (Number.isFinite(t) && Number.isFinite(y) && y>0){ T.push(t); I.push(y); }
+  }
+  const Tpi = [], Ypi = [];
+  for (let i=0;i<PI.length;i++){
+    const t=Days[i], y=PI[i];
+    if (Number.isFinite(t) && Number.isFinite(y) && y>0){ Tpi.push(t); Ypi.push(y); }
+  }
+
+  /* Anchored Intercept */
+  let fitIntExp = (IntAnchor>0 && T.length>=2) ? fitExpAnchored(IntAnchor, T, I, t0) : null;
+  let fitIntHyp = (IntAnchor>0 && T.length>=3) ? fitHypAnchored(IntAnchor, T, I, t0) : null;
+  let chosenIntA = null;
+  if (fitIntExp && fitIntHyp) chosenIntA = (fitIntHyp.aic <= fitIntExp.aic) ? fitIntHyp : fitIntExp;
+  else chosenIntA = fitIntHyp || fitIntExp;
+
+  let InterceptA = new Array(Days.length).fill(NaN);
+  if (chosenIntA){
+    for (let i=0;i<Days.length;i++){ const t=Days[i]; InterceptA[i] = Number.isFinite(t) ? chosenIntA.predict(t) : NaN; }
+  } else {
+    InterceptA = INTERCEPT_DARCY.slice();
+  }
+  InterceptA = enforceNonIncreasing(InterceptA);
+  if (InterceptA.length) InterceptA[0] = IntAnchor;
+
+  /* Unanchored Intercept */
+  let InterceptU = new Array(Days.length).fill(NaN);
+  if (T.length>=2){
+    const fExp = fitExpDecay(T,I);
+    const fHyp = fitHyperbolic(T,I);
+    let chosen = null;
+    if (fExp && fHyp) chosen = (fHyp.aic <= fExp.aic) ? fHyp : fExp; else chosen = fHyp || fExp;
+    if (chosen){
+      for (let i=0;i<Days.length;i++){ const t=Days[i]; InterceptU[i] = Number.isFinite(t) ? chosen.predict(t) : NaN; }
+      InterceptU = enforceNonIncreasing(InterceptU);
+    } else { InterceptU = enforceNonIncreasing(INTERCEPT_DARCY.slice()); }
+  } else { InterceptU = enforceNonIncreasing(INTERCEPT_DARCY.slice()); }
+
+  /* Anchored PI */
+  let chosenPIA = null;
+  if (PIAnchor>0 && Tpi.length>=2){
+    if (chosenIntA && chosenIntA.type === 'exp'){
+      chosenPIA = fitExpAnchored(PIAnchor, Tpi, Ypi, t0);
+    } else {
+      chosenPIA = fitHypAnchored(PIAnchor, Tpi, Ypi, t0) || fitExpAnchored(PIAnchor, Tpi, Ypi, t0);
     }
   }
+  let PIA = new Array(Days.length).fill(NaN);
+  if (chosenPIA){
+    for (let i=0;i<Days.length;i++){ const t=Days[i]; PIA[i] = Number.isFinite(t) ? chosenPIA.predict(t) : NaN; }
+  } else {
+    const scale = (IntAnchor>0) ? (PIAnchor/IntAnchor) : 0;
+    for (let i=0;i<Days.length;i++){ PIA[i] = Number.isFinite(InterceptA[i]) ? Math.max(0, scale * InterceptA[i]) : NaN; }
+  }
+  PIA = enforceNonIncreasing(PIA);
+  if (PIA.length) PIA[0] = PIAnchor;
+
+  /* Unanchored PI — direct fit */
+  let PIU = new Array(Days.length).fill(NaN);
+  if (Tpi.length>=2){
+    const fExpPI = fitExpDecay(Tpi, Ypi);
+    const fHypPI = fitHyperbolic(Tpi, Ypi);
+    let bestPI = null;
+    if (fExpPI && fHypPI) bestPI = (fHypPI.aic <= fExpPI.aic) ? fHypPI : fExpPI; else bestPI = fHypPI || fExpPI;
+    if (bestPI){
+      for (let i=0;i<Days.length;i++){ const t=Days[i]; PIU[i] = Number.isFinite(t) ? bestPI.predict(t) : NaN; }
+    } else {
+      const medPI = median(Ypi.filter(Number.isFinite));
+      PIU = Days.map(()=> Math.max(0, medPI || 0));
+    }
+  }
+  PIU = enforceNonIncreasing(PIU);
 
   const sanitize = a => a.map(v=>Number.isFinite(v)?v:0);
 
@@ -480,14 +672,18 @@ function computeWellSeriesPhysical(well){
     OIL_PRODUCTION_CUML: sanitize(CumOil),
     GAS_OIL_RATIO: sanitize(GOR),
     WATER_CUT: sanitize(WATER_FRAC),
-    INTERCEPT_OIL_PHASE_IPR_REF_DEPTH: sanitize(INTERCEPT_TLS),
-    SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH: sanitize(PI_TLS),
+    INTERCEPT_A: sanitize(InterceptA),
+    PI_A: sanitize(PIA),
+    INTERCEPT_U: sanitize(InterceptU),
+    PI_U: sanitize(PIU),
     __plot: {
       Days,
       InterceptDarcy: INTERCEPT_DARCY.slice(),
-      InterceptRecon: INTERCEPT_TLS.slice(),
+      InterceptA: InterceptA.slice(),
+      InterceptU: InterceptU.slice(),
       PI: PI.slice(),
-      PIRecon: PI_TLS.slice(),
+      PIA: PIA.slice(),
+      PIU: PIU.slice(),
       BP_psi: BP_psi.slice(),
       BHP_psi: BHP_psi.slice(),
       q_stbd: oil_stb.slice()
@@ -495,29 +691,63 @@ function computeWellSeriesPhysical(well){
   };
 }
 
-/** Export JSON */
+/** Post-processing helper: force last to zero (export only) */
+function enforceLastZero(arr){
+  if (!arr || !arr.length) return arr;
+  const out = arr.slice();
+  out[out.length - 1] = 0; // why: align with requested post-processing convention
+  return out;
+}
+
+/** Export JSON (Anchored/Unanchored) */
 function buildJson(){
-  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1" };
+  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode };
   for (const w of wells){
     const c = computeWellSeriesPhysical(w);
     if (!c) continue;
     payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
-    const order = ["OIL_PRODUCTION_CUML","GAS_OIL_RATIO","WATER_CUT","INTERCEPT_OIL_PHASE_IPR_REF_DEPTH","SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH"];
-    for (const key of order){
-      // Force last value to zero for the two requested series (export-only override).
-      let values = c[key];
-      if (key === "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH" || key === "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH") {
-        values = c[key].slice();
-        if (values.length > 0) values[values.length - 1] = 0; // ensure tail is zero
-      }
+
+    const pick = (exportMode === 'anchored')
+      ? { INT: c.INTERCEPT_A, PI: c.PI_A }
+      : { INT: c.INTERCEPT_U, PI: c.PI_U };
+
+    /* Apply post-processing requirement */
+    const INT_pp = enforceLastZero(pick.INT);
+    const PI_pp  = enforceLastZero(pick.PI);
+
+    /* Non-IPR series (unchanged) */
+    const baseOrder = [
+      ["OIL_PRODUCTION_CUML","Oil production cumulative", c.OIL_PRODUCTION_CUML, "STB", "Liquid_Production_Volume"],
+      ["GAS_OIL_RATIO","Gas oil ratio", c.GAS_OIL_RATIO, "MSCF/STB", "Gas_To_Liquid_Ratio"],
+      ["WATER_CUT","Water cut", c.WATER_CUT, "STB/STB", "Liquid_To_Liquid_Ratio"]
+    ];
+    for (const [key, desc, arr, unit, mid] of baseOrder){
       payload.series.push({
-        description: SERIES_META[key].description,
-        displayUnit: SERIES_META[key].displayUnit,
+        description: desc,
+        displayUnit: unit,
         entityName: c.name,
         entityType: "WELL",
-        measurementID: SERIES_META[key].measurementID,
+        measurementID: mid,
         name: key,
-        values
+        values: arr.slice()
+      });
+    }
+
+    /* IPR series — EXACT metadata preserved + last=0 */
+    const iprOrder = [
+      ["INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", INT_pp],
+      ["SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", PI_pp]
+    ];
+    for (const [key, arr] of iprOrder){
+      const meta = SERIES_META[key];
+      payload.series.push({
+        description: meta.description,
+        displayUnit: meta.displayUnit,
+        entityName: c.name,
+        entityType: "WELL",
+        measurementID: meta.measurementID,
+        name: key,
+        values: arr.slice()
       });
     }
   }
@@ -542,7 +772,7 @@ function duplicateActiveWell(copies) {
     const unitsCopy = { ...src.units };
     wells.push({ id, name, tableData: tableCopy, units: unitsCopy });
   }
-  renderTabs(); renderAllPlotsAndDiag();
+  renderTabs(); safeRenderAll();
 }
 
 /** Plotting */
@@ -659,7 +889,7 @@ function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
   }
 }
 
-/** Diagnostics (Darcy) */
+/** Diagnostics */
 function buildDiagnostics(plot){
   const msgs = [];
   const tolRel = 0.05;
@@ -708,45 +938,52 @@ function renderAllPlotsAndDiag(){
 
   const X = comp.__plot.Days || [];
   const YintD = comp.__plot.InterceptDarcy || [];
-  const YintR = comp.__plot.InterceptRecon || [];
+  const YintA = comp.__plot.InterceptA || [];
+  const YintU = comp.__plot.InterceptU || [];
   const Ypi = comp.__plot.PI || [];
-  const YpiR = comp.__plot.PIRecon || [];
+  const YpiA = comp.__plot.PIA || [];
+  const YpiU = comp.__plot.PIU || [];
 
-  const ptsIntD = [], ptsIntRecon = [];
-  const ptsPI = [], ptsPIRecon = [];
-  const ptsScatterRaw = [], ptsReconScatter = [];
+  const ptsIntD = [], ptsIntA = [], ptsIntU = [];
+  const ptsPI = [], ptsPIA = [], ptsPIU = [];
+  const ptsScatterRaw = [], ptsFitScatterA = [], ptsFitScatterU = [];
 
   for (let i=0;i<X.length; i++){
     const x = X[i];
-    const itcD = YintD[i], itcR = YintR[i];
-    const pi = Ypi[i], piR = YpiR[i];
+    const itcD = YintD[i], itcA = YintA[i], itcU = YintU[i];
+    const pi = Ypi[i], piA = YpiA[i], piU = YpiU[i];
     if (Number.isFinite(x) && Number.isFinite(itcD)) ptsIntD.push([x, itcD]);
-    if (Number.isFinite(x) && Number.isFinite(itcR)) ptsIntRecon.push([x, itcR]);
+    if (Number.isFinite(x) && Number.isFinite(itcA)) ptsIntA.push([x, itcA]);
+    if (Number.isFinite(x) && Number.isFinite(itcU)) ptsIntU.push([x, itcU]);
+
     if (Number.isFinite(x) && Number.isFinite(pi)) ptsPI.push([x, pi]);
-    if (Number.isFinite(x) && Number.isFinite(piR)) ptsPIRecon.push([x, piR]);
+    if (Number.isFinite(x) && Number.isFinite(piA)) ptsPIA.push([x, piA]);
+    if (Number.isFinite(x) && Number.isFinite(piU)) ptsPIU.push([x, piU]);
+
     if (Number.isFinite(itcD) && Number.isFinite(pi)) ptsScatterRaw.push([itcD, pi]);
-    if (Number.isFinite(itcR) && Number.isFinite(piR)) ptsReconScatter.push([itcR, piR]);
+    if (Number.isFinite(itcA) && Number.isFinite(piA)) ptsFitScatterA.push([itcA, piA]);
+    if (Number.isFinite(itcU) && Number.isFinite(piU)) ptsFitScatterU.push([itcU, piU]);
   }
 
-  const seriesInt = [
+  renderLineMulti(svgIntercept, [
     { pts: ptsIntD, color: '#3b82f6' },
-    { pts: ptsIntRecon, color: '#a78bfa' }
-  ];
-  renderLineMulti(svgIntercept, seriesInt, {xLabel:'Days', yLabel:'Intercept (STB/d)', emptyEl: emptyIntercept});
+    { pts: ptsIntA, color: '#eab308' },
+    { pts: ptsIntU, color: '#22c55e' }
+  ], {xLabel:'Days', yLabel:'Intercept (STB/day)', emptyEl: emptyIntercept});
 
-  const seriesPI = [
+  renderLineMulti(svgPI, [
     { pts: ptsPI, color: '#3b82f6' },
-    { pts: ptsPIRecon, color: '#a78bfa' }
-  ];
-  renderLineMulti(svgPI, seriesPI, {xLabel:'Days', yLabel:'IPR (STB/d)/psi', emptyEl: emptyPI});
+    { pts: ptsPIA, color: '#eab308' },
+    { pts: ptsPIU, color: '#22c55e' }
+  ], {xLabel:'Days', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPI});
 
-  const seriesSc = [
+  renderScatterMulti(svgPIvsInt, [
     { pts: ptsScatterRaw, color: '#3b82f6' },
-    { pts: ptsReconScatter, color: '#a78bfa' }
-  ];
-  renderScatterMulti(svgPIvsInt, seriesSc, {xLabel:'Intercept (STB/d)', yLabel:'IPR (STB/d)/psi', emptyEl: emptyPIvsInt});
+    { pts: ptsFitScatterA, color: '#eab308' },
+    { pts: ptsFitScatterU, color: '#22c55e' }
+  ], {xLabel:'Intercept (STB/day)', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPIvsInt});
 
-  const diags = buildDiagnostics(comp.__plot);
+  const diags = buildDiagnostics({Days:X, InterceptDarcy:YintD, PI:Ypi, BP_psi:comp.__plot.BP_psi, BHP_psi:comp.__plot.BHP_psi, q_stbd:comp.__plot.q_stbd});
   if (!diags.length){
     diagBox.innerHTML = `<span class="ok">All checks passed.</span>`;
   } else {
@@ -755,9 +992,19 @@ function renderAllPlotsAndDiag(){
   }
 }
 
+/** Safe render wrapper */
+function safeRenderAll(){
+  try { renderAllPlotsAndDiag(); }
+  catch (err){
+    const msg = (err && err.stack) ? err.stack : String(err);
+    diagBox.innerHTML = `<div class="bad"><b>Runtime error:</b><pre style="white-space:pre-wrap">${msg}</pre></div>`;
+    console.error(err);
+  }
+}
+
 /** Units wiring */
 function renderUnits(){
-  const w = wells.find(x=>x.id===activeWellId); if (!w) return;
+  const w=wells.find(x=>x.id===activeWellId); if (!w) return;
   u_time.value = w.units.time;
   u_bp.value = w.units.bp;
   u_bhp.value = w.units.bhp;
@@ -765,23 +1012,36 @@ function renderUnits(){
   u_gas.value = w.units.gas;
   u_wat.value = w.units.wat;
 }
-u_time.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.time = u_time.value; renderAllPlotsAndDiag(); } };
-u_bp.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.bp = u_bp.value; renderAllPlotsAndDiag(); } };
-u_bhp.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.bhp = u_bhp.value; renderAllPlotsAndDiag(); } };
-u_oil.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.oil = u_oil.value; renderAllPlotsAndDiag(); } };
-u_gas.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.gas = u_gas.value; renderAllPlotsAndDiag(); } };
-u_wat.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.wat = u_wat.value; renderAllPlotsAndDiag(); } };
+u_time.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.time = u_time.value; safeRenderAll(); } };
+u_bp.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.bp = u_bp.value; safeRenderAll(); } };
+u_bhp.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.bhp = u_bhp.value; safeRenderAll(); } };
+u_oil.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.oil = u_oil.value; safeRenderAll(); } };
+u_gas.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.gas = u_gas.value; safeRenderAll(); } };
+u_wat.onchange = ()=>{ const w=wells.find(x=>x.id===activeWellId); if (w) { w.units.wat = u_wat.value; safeRenderAll(); } };
+
+/** Export mode wiring */
+exportModeSel.onchange = () => {
+  exportMode = exportModeSel.value;
+  legendExportMode.textContent = exportMode === 'anchored' ? 'Anchored' : 'Unanchored';
+};
 
 /** UI actions */
 document.getElementById('addWellBtn').onclick = () => addWell();
-downloadBtn.onclick = () => download('ipr_decline_curves.json', buildJson());
+downloadBtn.onclick = () => download(`ipr_decline_curves_${exportMode}.json`, buildJson());
 deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
 deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?")) resetAllWells(); };
-clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); renderAllPlotsAndDiag(); };
+clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); safeRenderAll(); };
 duplicateBtn.onclick = () => { const n = Number(copyCountInput.value); duplicateActiveWell(Number.isFinite(n) ? n : 1); };
+
+/** Global error surfacing */
+window.onerror = function(message, source, lineno, colno, error){
+  const detail = (error && error.stack) ? error.stack : `${message} at ${source}:${lineno}:${colno}`;
+  diagBox.innerHTML = `<div class="bad"><b>Runtime error:</b><pre style="white-space:pre-wrap">${detail}</pre></div>`;
+};
 
 /** Boot */
 addWell('P1');
+legendExportMode.textContent = 'Anchored';
 </script>
 </body>
 </html>
