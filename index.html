@@ -13,32 +13,48 @@
     .btn{padding:8px 12px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-weight:600;font-size:12px}
     .btn:hover{background:rgba(255,255,255,.1)}.btn.brand{background:#16a34a;border-color:#0e7a34;color:#052e16}.btn.danger{background:var(--danger);border-color:#991b1b;color:#fff}.btn.dark{background:#0b1220;border-color:#2a364d;color:#e5e7eb}
     .hint{color:#e5e7eb;opacity:.85;font-size:11px}
-    .tabs{display:flex;flex-wrap:wrap;gap:6px;row-gap:8px;padding:10px 16px;margin-top:12px;border-bottom:1px solid var(--border);background:#0e1527}
-    .tab{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);background:var(--card);border-radius:10px;cursor:pointer;white-space:nowrap;font-size:12px}
-    .tab.active{outline:2px solid var(--accent)}.tab input{background:transparent;color:#e5e7eb;border:none;width:120px;font-weight:600;font-size:12px}.tab .x{font-weight:800;color:#94a3b8;cursor:pointer}
+
+    /* mode descriptions (always visible) + tabs */
+    .mode-blurbs{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:8px;padding:10px 16px;background:#0b1220;border-bottom:1px solid var(--border)}
+    .mode-item{border:1px solid var(--border);border-radius:10px;background:#0f1528;padding:8px}
+    .mode-title{font-weight:700;font-size:12px;margin-bottom:4px;color:#e5e7eb}
+    .mode-desc{font-size:12px;color:#cbd5e1;opacity:.95}
+
     .mtabs{display:flex;gap:8px;padding:10px 16px;background:#0b1220;border-bottom:1px solid var(--border)}
     .mtab{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:#0f1528;cursor:pointer;font-size:12px;color:#cbd5e1;opacity:.9}
     .mtab.active{outline:2px solid var(--accent);opacity:1}
+
+    /* well tabs */
+    .tabs{display:flex;flex-wrap:wrap;gap:6px;row-gap:8px;padding:10px 16px;margin-top:12px;border-bottom:1px solid var(--border);background:#0e1527}
+    .tab{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);background:var(--card);border-radius:10px;cursor:pointer;white-space:nowrap;font-size:12px}
+    .tab.active{outline:2px solid var(--accent)}.tab input{background:transparent;color:#e5e7eb;border:none;width:120px;font-weight:600;font-size:12px}.tab .x{font-weight:800;color:#94a3b8;cursor:pointer}
+
+    /* layout */
     .wrap{padding:16px;display:flex;justify-content:center}.container{width:100%;max-width:980px}.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px}
     .controls{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;font-size:12px}.right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
     .units{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:8px;margin:10px 0 6px}
     .units label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--muted)}
     select,input[type="number"]{background:#0b1220;color:#e5e7eb;border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:12px}
     input[type="number"]{width:72px}
+
     table{width:100%;border-collapse:collapse;table-layout:fixed}
     thead th{position:sticky;top:0;background:#0b1220;z-index:1}
     th,td{border:1px solid #1f2937;padding:6px;text-align:left;vertical-align:top;font-size:12px;line-height:1.2}
     td[contenteditable="true"]{outline:none}td:focus{box-shadow:inset 0 0 0 2px var(--accent)}
-    .plot-title{font-size:12px;color:var(--muted);margin-bottom:8px}
-    .plot-wrap{width:100%;overflow:auto}.plot-empty{font-size:12px;color:var(--muted);padding:8px}
-    .diag{font-size:12px;color:#eab308}.diag .ok{color:#22c55e}.diag .bad{color:#f87171}.diag ul{margin:6px 0 0 18px;padding:0}
+
+    .plot-title{font-size:12px;color:#94a3b8;margin-bottom:8px}
+    .plot-wrap{width:100%;overflow:auto}.plot-empty{font-size:12px;color:#94a3b8;padding:8px}
     .legend{display:flex;gap:12px;align-items:center;margin-top:6px;font-size:11px;color:#cbd5e1;flex-wrap:wrap}.legend .item{display:flex;gap:6px;align-items:center}.chip{width:14px;height:3px;border-radius:2px;display:inline-block}
+
     .spacer{flex:1}
     .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.15);cursor:pointer}
     .iconbtn:hover{background:rgba(255,255,255,.12)}
     .iconbtn svg{width:16px;height:16px;opacity:.9}
+
     .hidden{display:none !important}
+    .always-hide{display:none !important} /* permanently hidden elements */
   </style>
 </head>
 <body>
@@ -49,13 +65,13 @@
     </div>
 
     <button class="btn dark" id="addWellBtn">+ Add Well</button>
-    <button class="btn brand" id="downloadBtn">Download JSON (Anchored)</button>
+    <button class="btn brand" id="downloadBtn">Download JSON (Raw)</button>
     <button class="btn danger" id="deleteAllBtn">Delete All Wells</button>
     <span class="hint">Tip: paste from Excel; rows auto-expand.</span>
 
     <div class="spacer"></div>
 
-    <!-- Discrete QC toggle (hidden-on-boot) -->
+    <!-- QC toggle (plots hidden on boot) -->
     <button class="iconbtn" id="qcToggleBtn" title="Toggle QC plots">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
@@ -64,11 +80,27 @@
     </button>
   </header>
 
-  <!-- Mode tabs -->
+  <!-- Always-visible descriptions for all modes (no highlight) -->
+  <div class="mode-blurbs" id="modeBlurbs">
+    <div class="mode-item" data-mode="raw">
+      <div class="mode-title">Raw DC</div>
+      <div class="mode-desc">Export intercept & PI directly from inputs. First value forced non-zero (copied from 2nd if needed); last value forced zero. No fitting.</div>
+    </div>
+    <div class="mode-item" data-mode="smooth">
+      <div class="mode-title">Smooth DC</div>
+      <div class="mode-desc">Noise-reduced version of Raw DC using smoothing for high-fidelity yet less-noisy curves. Same first/last rules on export.</div>
+    </div>
+    <div class="mode-item" data-mode="fit">
+      <div class="mode-title">Fit DC</div>
+      <div class="mode-desc">Anchored piecewise fit constrained non-increasing; breakpoints shared across intercept & PI.</div>
+    </div>
+  </div>
+
+  <!-- Mode tabs (left→right: Raw, Smooth, Fit) -->
   <div class="mtabs" id="modeTabs">
-    <div class="mtab active" data-mode="smoothing">Smoothing DC</div>
-    <div class="mtab" data-mode="raw">Raw DC</div>
-    <div class="mtab" data-mode="clean">Clean DC</div>
+    <div class="mtab active" data-mode="raw">Raw DC</div>
+    <div class="mtab" data-mode="smooth">Smooth DC</div>
+    <div class="mtab" data-mode="fit">Fit DC</div>
   </div>
 
   <!-- Well tabs -->
@@ -156,9 +188,9 @@
       <!-- Legend (hidden with QC) -->
       <div class="card qc-plot" style="margin-top:12px;">
         <div class="legend mono">
-          <div class="item"><span class="chip" style="background:#3b82f6"></span>Raw</div>
-          <div class="item"><span class="chip" style="background:#eab308"></span>Anchored Fit</div>
-          <div class="item"><span class="chip" style="background:#10b981"></span>Clean (Smoothed Raw)</div>
+          <div class="item"><span class="chip"></span>Raw</div>
+          <div class="item"><span class="chip"></span>Smooth (Smoothed Raw)</div>
+          <div class="item"><span class="chip"></span>Fit (Anchored)</div>
         </div>
       </div>
 
@@ -179,16 +211,17 @@
         </div>
       </div>
 
-      <div class="card qc-plot" style="margin-top:12px;">
-        <div class="plot-title mono">IPR vs Intercept — Scatter (Raw, Anchored, Clean)</div>
+      <!-- Permanently hidden scatter plot -->
+      <div class="card qc-plot always-hide" style="margin-top:12px;">
+        <div class="plot-title mono">IPR vs Intercept — Scatter (Raw, Smooth, Fit)</div>
         <div class="plot-wrap">
           <svg id="plotPIvsInt" width="100%" height="300" viewBox="0 0 900 300" preserveAspectRatio="none"></svg>
           <div id="emptyPIvsInt" class="plot-empty" style="display:none;">Enter at least two valid rows (Time, BP, BHP, Oil).</div>
         </div>
       </div>
 
-      <!-- Diagnostics (hidden with QC) -->
-      <div class="card qc-plot" style="margin-top:12px;">
+      <!-- Diagnostics: kept hidden -->
+      <div class="card" id="diagCard" style="display:none;">
         <div class="plot-title mono">Diagnostics — Sanity Checks (Darcy IPR)</div>
         <div class="diag" id="diagBox"><span class="ok">No issues yet.</span></div>
       </div>
@@ -196,7 +229,7 @@
   </div>
 
 <script>
-/** Constants & state */
+/** ===== State & constants ===== */
 const WELL_COLS = ["Time","Well Block Pressure - 9P","Bottom-hole Pressure","Oil Rate","Gas Rate","Water Rate"];
 const SERIES_META = {
   OIL_PRODUCTION_CUML: { description:"Oil production cumulative rate", displayUnit:"STB", measurementID:"Liquid_Production_Volume" },
@@ -210,12 +243,10 @@ const M3_TO_MMSCF = 35.3146667 / 1e6;
 const PSI_TO_KPA = 6.894757293168, BAR_TO_KPA = 100.0, MPA_TO_KPA = 1000.0;
 
 let wells = []; let activeWellId = null;
+let appMode = 'raw';   // default Raw DC
+let qcVisible = false; // plots hidden on boot
 
-/* Modes + QC toggle */
-let appMode = 'smoothing';
-let qcVisible = false;
-
-/** DOM */
+/** ===== DOM ===== */
 const modeTabsEl = document.getElementById('modeTabs');
 const tabsEl = document.getElementById('tabs');
 const bodyEl = document.getElementById('tableBody');
@@ -230,36 +261,34 @@ const activeWellNameEl = document.getElementById('activeWellName');
 const qcToggleBtn = document.getElementById('qcToggleBtn');
 
 const u_time = document.getElementById('u_time');
-const u_bp = document.getElementById('u_bp');
-const u_bhp = document.getElementById('u_bhp');
-const u_oil = document.getElementById('u_oil');
-const u_gas = document.getElementById('u_gas');
-const u_wat = document.getElementById('u_wat');
+const u_bp   = document.getElementById('u_bp');
+const u_bhp  = document.getElementById('u_bhp');
+const u_oil  = document.getElementById('u_oil');
+const u_gas  = document.getElementById('u_gas');
+const u_wat  = document.getElementById('u_wat');
+
 const svgIntercept = document.getElementById('plotIntercept');
-const svgPI = document.getElementById('plotPI');
-const svgPIvsInt = document.getElementById('plotPIvsInt');
+const svgPI        = document.getElementById('plotPI');
+const svgPIvsInt   = document.getElementById('plotPIvsInt'); // exists but always hidden
 const emptyIntercept = document.getElementById('emptyIntercept');
-const emptyPI = document.getElementById('emptyPI');
-const emptyPIvsInt = document.getElementById('emptyPIvsInt');
+const emptyPI        = document.getElementById('emptyPI');
+const emptyPIvsInt   = document.getElementById('emptyPIvsInt'); // exists but always hidden
 const diagBox = document.getElementById('diagBox');
 
-/** Helpers */
+/** ===== Utils ===== */
 const uuid = () => Math.random().toString(36).slice(2,9);
 const toNumber = v => { if (typeof v === 'number') return v; if (v==null) return NaN; const s=String(v).trim().replace(/,/g,''); if(!s) return NaN; const n=Number(s); return Number.isFinite(n)?n:NaN; };
 const isMostlyNonNumericRow = row => row.map(toNumber).filter(Number.isFinite).length <= 2;
-function ensureRows(well, rowsNeeded){ const add = Math.max(0, rowsNeeded - well.tableData.length); for (let i=0;i<add;i++) well.tableData.push(Array(WELL_COLS.length).fill('')); return add; }
-function isWellEmpty(well){ for (const row of well.tableData) for (const cell of row) if (String(cell ?? '').trim() !== '') return false; return true; }
-function nextAvailableWellName(){ const used=new Set(); for(const w of wells){ const m=/^P(\d+)$/.exec(w.name.trim()); if(m) used.add(+m[1]); } let n=1; while(used.has(n)) n++; return `P${n}`; }
 function sanitizeArray(arr){ return (arr||[]).map(v => Number.isFinite(v) ? v : 0); }
 
-/** Units */
+/** ===== Units ===== */
 function factorTimeToDays(code){ switch(code){ case 'd': return 1; case 'h': return 1/24; case 'mo30': return 30; case 'y365': return 365; default: return 1; } }
 function factorPressureToKPa(code){ switch(code){ case 'kpa': return 1; case 'bar': return BAR_TO_KPA; case 'mpa': return MPA_TO_KPA; case 'psi': return PSI_TO_KPA; default: return 1; } }
 function factorOilWaterToM3d(code){ switch(code){ case 'm3d': return 1; case 'stbd': return STB_TO_M3; case 'm3h': return 24; default: return 1; } }
 function factorGasToM3d(code){ switch(code){ case 'm3d': return 1; case 'mscf': return 28.316846592; case 'mmscf': return 28316.846592; default: return 1; } }
 function applyFactorArray(arr, factor){ return arr.map(v => Number.isFinite(v) ? v*factor : NaN); }
 
-/** Math & fitting (unchanged) */
+/** ===== Math & fitting helpers ===== */
 const MAX_SEGMENTS = 6;
 function aicFromSSE(sse, n, k){ return (n>0) ? (n * Math.log(Math.max(sse/n,1e-18)) + 2*k) : Infinity; }
 function enforceNonIncreasing(arr){
@@ -300,7 +329,7 @@ function validXYW(X,Y,W){
 function linRegAnchoredConstrained(x, y, a0, x0){
   const n = x.length; if(n<1) return {b:0,sse:0};
   let num=0, den=0; for(let i=0;i<n;i++){ const dx=x[i]-x0; num += dx*(y[i]-a0); den += dx*dx; }
-  let b = (den>0)? (num/den) : 0; if(!Number.isFinite(b) || b>0) b=0;
+  let b = (den>0)? (num/den) : 0; if(!Number.isFinite(b) || b>0) b=0; // slope ≤ 0
   let sse=0; for(let i=0;i<n;i++){ const e=(a0 + b*(x[i]-x0)) - y[i]; sse+=e*e; }
   return {b,sse};
 }
@@ -424,23 +453,112 @@ function bestAnchoredPiecewise_Weighted_withFixedEnds(X,Y,A0,W,fixedGlobalEnds){
   return {pred:enforceNonIncreasing(back)};
 }
 
-/** Well management */
+/** ===== Tabs & wells ===== */
 function defaultUnits(){ return { time:'d', bp:'kpa', bhp:'kpa', oil:'m3d', gas:'m3d', wat:'m3d' }; }
 function createWell(name){ return { id: uuid(), name, units: defaultUnits(), tableData: Array.from({length:30}, () => Array(WELL_COLS.length).fill('')) }; }
-function addWell(initialName){ const name=initialName ?? `P${wells.length+1}`; const w=createWell(name); wells.push(w); setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
-function deleteWell(id){ wells = wells.filter(w=>w.id!==id); if(!wells.length) addWell('P1'); setActiveWell(wells[0].id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }
-function deleteWellWithMaybeConfirm(id){ const w=wells.find(x=>x.id===id); if(!w) return; if(isWellEmpty(w)) deleteWell(id); else if(confirm(`Delete well "${w.name}"?`)) deleteWell(id); }
+function addWell(initialName){
+  const name = initialName ?? nextAvailableWellName();
+  const w = createWell(name);
+  wells.push(w);
+  setActiveWell(w.id);
+  renderTabs();
+  renderTable();
+  renderUnits();
+  safeRenderAll();
+}
+function nextAvailableWellName(){
+  const used=new Set();
+  for(const w of wells){
+    const m=/^P(\d+)$/.exec(w.name.trim());
+    if(m) used.add(+m[1]);
+  }
+  let n=1; while(used.has(n)) n++;
+  return `P${n}`;
+}
+function deleteWell(id){
+  wells = wells.filter(w=>w.id!==id);
+  if(!wells.length) addWell('P1');
+  setActiveWell(wells[0].id);
+  renderTabs(); renderTable(); renderUnits(); safeRenderAll();
+}
+function deleteWellWithMaybeConfirm(id){
+  const w=wells.find(x=>x.id===id); if(!w) return;
+  if(isWellEmpty(w)) deleteWell(id);
+  else if(confirm(`Delete well "${w.name}"?`)) deleteWell(id);
+}
 function resetAllWells(){ wells=[]; addWell('P1'); }
 function setActiveWell(id){ activeWellId=id; activeWellNameEl.textContent=wells.find(w=>w.id===id)?.name ?? ''; }
-function renameWell(id,newName){ const w=wells.find(x=>x.id===id); if(!w) return; w.name=newName.trim()||w.name; if(id===activeWellId) activeWellNameEl.textContent=w.name; }
-function renderTabs(){ tabsEl.innerHTML=''; wells.forEach(w=>{ const tab=document.createElement('div'); tab.className='tab'+(w.id===activeWellId?' active':''); tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); }; const input=document.createElement('input'); input.value=w.name; input.oninput=e=>renameWell(w.id,e.target.value); const close=document.createElement('span'); close.className='x'; close.textContent='×'; close.onclick=(ev)=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); }; tab.appendChild(input); tab.appendChild(close); tabsEl.appendChild(tab); }); }
+function renameWell(id,newName){ const w=wells.find(x=>x.id===id); if(!w) return; w.name=(newName||'').trim()||w.name; if(id===activeWellId) activeWellNameEl.textContent=w.name; }
+function isWellEmpty(well){ for (const row of well.tableData) for (const cell of row) if (String(cell ?? '').trim() !== '') return false; return true; }
+function renderTabs(){
+  tabsEl.innerHTML='';
+  wells.forEach(w=>{
+    const tab=document.createElement('div');
+    tab.className='tab'+(w.id===activeWellId?' active':'');
+    tab.onclick=()=>{ setActiveWell(w.id); renderTabs(); renderTable(); renderUnits(); safeRenderAll(); };
+    const input=document.createElement('input');
+    input.value=w.name;
+    input.oninput=e=>renameWell(w.id,e.target.value);
+    const close=document.createElement('span');
+    close.className='x'; close.textContent='×';
+    close.onclick=(ev)=>{ ev.stopPropagation(); deleteWellWithMaybeConfirm(w.id); };
+    tab.appendChild(input); tab.appendChild(close);
+    tabsEl.appendChild(tab);
+  });
+}
 
-/** Table */
-function renderTable(){ const w=wells.find(x=>x.id===activeWellId); if(!w) return; bodyEl.innerHTML=''; w.tableData.forEach((row,r)=>{ const tr=document.createElement('tr'); for(let c=0;c<WELL_COLS.length;c++){ const td=document.createElement('td'); td.contentEditable='true'; td.spellcheck=false; td.dataset.row=r; td.dataset.col=c; td.textContent=row[c] ?? ''; td.addEventListener('input', onCellInput); td.addEventListener('paste', onCellPaste); tr.appendChild(td);} bodyEl.appendChild(tr); }); }
-function onCellInput(e){ const td=e.currentTarget; const r=+td.dataset.row, c=+td.dataset.col; const w=wells.find(x=>x.id===activeWellId); w.tableData[r][c]=td.textContent; safeRenderAll(); }
-function onCellPaste(e){ e.preventDefault(); const td=e.currentTarget; const startR=+td.dataset.row, startC=+td.dataset.col; const raw=(e.clipboardData||window.clipboardData).getData('text'); const lines=raw.replace(/\r/g,'').split('\n').filter(Boolean).map(l=>l.split('\t')); if(!lines.length) return; const payload=isMostlyNonNumericRow(lines[0])?lines.slice(1):lines; const w=wells.find(x=>x.id===activeWellId); const added=ensureRows(w, startR+payload.length); if(added>0) renderTable(); for(let i=0;i<payload.length;i++){ const cols=payload[i]; for(let j=0;j<cols.length && (startC+j)<WELL_COLS.length;j++){ const r=startR+i, c=startC+j; w.tableData[r][c]=cols[j]; const cell=bodyEl.querySelector(`td[data-row="${r}"][data-col="${c}"]`); if(cell) cell.textContent=cols[j]; } } safeRenderAll(); }
+/** ===== Table ===== */
+function renderTable(){
+  const w=wells.find(x=>x.id===activeWellId); if(!w) return;
+  bodyEl.innerHTML='';
+  w.tableData.forEach((row,r)=>{
+    const tr=document.createElement('tr');
+    for(let c=0;c<WELL_COLS.length;c++){
+      const td=document.createElement('td');
+      td.contentEditable='true'; td.spellcheck=false;
+      td.dataset.row=r; td.dataset.col=c;
+      td.textContent=row[c] ?? '';
+      td.addEventListener('input', onCellInput);
+      td.addEventListener('paste', onCellPaste);
+      tr.appendChild(td);
+    }
+    bodyEl.appendChild(tr);
+  });
+}
+function ensureRows(well, rowsNeeded){
+  const add = Math.max(0, rowsNeeded - well.tableData.length);
+  for (let i=0;i<add;i++) well.tableData.push(Array(WELL_COLS.length).fill(''));
+  return add;
+}
+function onCellInput(e){
+  const td=e.currentTarget; const r=+td.dataset.row, c=+td.dataset.col;
+  const w=wells.find(x=>x.id===activeWellId);
+  w.tableData[r][c]=td.textContent;
+  safeRenderAll();
+}
+function onCellPaste(e){
+  e.preventDefault();
+  const td=e.currentTarget; const startR=+td.dataset.row, startC=+td.dataset.col;
+  const raw=(e.clipboardData||window.clipboardData).getData('text');
+  const lines=raw.replace(/\r/g,'').split('\n').filter(Boolean).map(l=>l.split('\t'));
+  if(!lines.length) return;
+  const payload=isMostlyNonNumericRow(lines[0])?lines.slice(1):lines;
+  const w=wells.find(x=>x.id===activeWellId);
+  const added=ensureRows(w, startR+payload.length);
+  if(added>0) renderTable();
+  for(let i=0;i<payload.length;i++){
+    const cols=payload[i];
+    for(let j=0;j<cols.length && (startC+j)<WELL_COLS.length;j++){
+      const r=startR+i, c=startC+j;
+      w.tableData[r][c]=cols[j];
+      const cell=bodyEl.querySelector(`td[data-row="${r}"][data-col="${c}"]`);
+      if(cell) cell.textContent=cols[j];
+    }
+  }
+  safeRenderAll();
+}
 
-/** Core computation */
+/** ===== Core compute ===== */
 function computeWellSeriesPhysical(well){
   const data = well.tableData;
   const DAYS_raw = data.map(r=>toNumber(r[0]));
@@ -450,6 +568,7 @@ function computeWellSeriesPhysical(well){
   const GAS_raw  = data.map(r=>toNumber(r[4]));
   const WAT_raw  = data.map(r=>toNumber(r[5]));
 
+  // effective length (ignore trailing blank rows)
   let L = DAYS_raw.length;
   for (; L>0; L--){
     const i=L-1;
@@ -480,13 +599,14 @@ function computeWellSeriesPhysical(well){
   const GOR = oil_stb.map((o,i)=> (Number.isFinite(o) && o>0) ? gas_mmscf[i]/o : NaN);
   const WATER_FRAC = oil_stb.map((o,i)=>{ const w = wat_stb[i]; const denom = (Number.isFinite(o)?o:0) + (Number.isFinite(w)?w:0); return denom > 0 ? (w/denom) : NaN; });
 
+  // cumulative oil (simple rectangle integration by day deltas)
   const dDays = Days.map(v=>Number.isFinite(v)?v:0);
   for (let i=dDays.length-1;i>=1;i--) dDays[i] = (Number.isFinite(Days[i])?Days[i]:0) - (Number.isFinite(Days[i-1])?Days[i-1]:0);
   const oilVolPerDate = oil_stb.map((q,i)=>(Number.isFinite(q)?q:0) * (Number.isFinite(dDays[i])?dDays[i]:0));
   const CumOil = (function(){ const out=[]; let s=0; for(const v of oilVolPerDate){ s+=v; out.push(s);} return out; })();
 
+  // Δp and PI/intercept
   const dP = BP_psi.map((bp,i)=> (Number.isFinite(bp) && Number.isFinite(BHP_psi[i])) ? Math.max(0, bp - BHP_psi[i]) : NaN);
-
   let PI = oil_stb.map((q,i)=> { const dp=dP[i]; return (Number.isFinite(q) && Number.isFinite(dp) && dp>0) ? Math.max(0,q/dp) : NaN; });
   if (PI.length>=2 && !Number.isFinite(PI[0]) && Number.isFinite(PI[1])) PI[0]=PI[1];
 
@@ -500,13 +620,14 @@ function computeWellSeriesPhysical(well){
 
   const Xcum = CumOil.slice();
 
-  // Anchored fits (unchanged)
+  // anchored fit for intercept
   const interceptModel = bestAnchoredPiecewise_Unweighted(Xcum, INTERCEPT_DARCY, IntAnchor);
   const InterceptA = interceptModel.pred;
   const endsIntFiltered = interceptModel.ends;
   const validIntIdx = interceptModel.validIdx;
   const endsIntGlobal = endsIntFiltered.map(fi => validIntIdx[fi]);
 
+  // weights for PI along Δp
   const dpValid = dP.filter(Number.isFinite).filter(v=>v>0);
   const dpMed = dpValid.length ? dpValid.sort((a,b)=>a-b)[Math.floor(dpValid.length/2)] : 1;
   const wPI = dP.map(v=>{
@@ -515,6 +636,7 @@ function computeWellSeriesPhysical(well){
     return Math.min(4, Math.max(0.25, r));
   });
 
+  // PI fit constrained by same segment ends
   const piForced = bestAnchoredPiecewise_Weighted_withFixedEnds(Xcum, PI, PIAnchor, wPI, endsIntGlobal);
   const PIA = piForced.pred;
 
@@ -542,8 +664,7 @@ function computeWellSeriesPhysical(well){
   };
 }
 
-/** --- Clean DC (Savitzky–Golay smoothing) --- */
-/* why: high-fidelity noise removal without biasing trend */
+/** ===== Smoothing (Savitzky–Golay) ===== */
 function sgCoefficients(window, poly){
   const m = (window-1)/2;
   const X = [];
@@ -552,19 +673,17 @@ function sgCoefficients(window, poly){
   }
   const Xt = transpose(X);
   const XtX = multiply(Xt, X);
-  const invXtX = invert(XtX); // small (<= 6×6)
+  const invXtX = invert(XtX);
   if(!invXtX) return null;
   const A = multiply(invXtX, Xt);
-  return A[0]; // weights for value at center
+  return A[0]; // center weights
 }
 function sgSmooth(y, window=7, poly=3){
-  const n = y.length;
-  if(n===0) return [];
-  // window must be odd and >= poly+2
+  const n = y.length; if(n===0) return [];
   window = Math.max(3, window|0); if(window%2===0) window+=1;
   poly = Math.max(2, Math.min(poly|0, window-2));
   const w = sgCoefficients(window, poly);
-  if(!w){ // fallback: simple moving average
+  if(!w){ // fallback moving average
     const k=(window-1)/2; const out=new Array(n).fill(0);
     for(let i=0;i<n;i++){
       let s=0,c=0; for(let j=-k;j<=k;j++){ const idx=reflectIndex(i+j,n); s+=y[idx]; c++; }
@@ -577,17 +696,17 @@ function sgSmooth(y, window=7, poly=3){
   for(let i=0;i<n;i++){
     let s=0;
     for(let j=-k;j<=k;j++){ const idx=reflectIndex(i+j,n); s += w[j+k] * y[idx]; }
-    out[i]=s;
+    out[i]=Math.max(0,s);
   }
   return out;
 }
-function reflectIndex(i, n){
-  // symmetric padding: [-1]->1, [n]->n-2
-  if(i<0) return -i;
-  if(i>=n) return (2*n-2) - i;
-  return i;
+function buildCleanFromRaw(rawArr){
+  if(!rawArr || !rawArr.length) return [];
+  const out = rawArr.slice();
+  if(out.length>=2 && out[0]===0 && Number.isFinite(out[1]) && out[1]>0) out[0]=out[1]; // enforce non-zero first
+  return sgSmooth(out, 7, 3);
 }
-// tiny linear algebra
+function reflectIndex(i, n){ if(i<0) return -i; if(i>=n) return (2*n-2) - i; return i; }
 function transpose(A){ return A[0].map((_,j)=>A.map(r=>r[j])); }
 function multiply(A,B){
   const r=A.length, c=B[0].length, k=B.length;
@@ -597,138 +716,21 @@ function multiply(A,B){
 }
 function invert(M){
   const n=M.length;
-  // build augmented [M | I]
   const A=M.map((row,i)=>row.concat(Array.from({length:n},(_,j)=>i===j?1:0)));
-  // Gauss-Jordan
   for(let i=0;i<n;i++){
-    // pivot
     let p=i; for(let r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[p][i])) p=r;
     if(Math.abs(A[p][i])<1e-12) return null;
     if(p!==i) [A[p],A[i]]=[A[i],A[p]];
-    // normalize
     const piv=A[i][i]; for(let j=0;j<2*n;j++) A[i][j]/=piv;
-    // eliminate
     for(let r=0;r<n;r++) if(r!==i){
       const f=A[r][i]; if(f===0) continue;
       for(let j=0;j<2*n;j++) A[r][j]-=f*A[i][j];
     }
   }
-  // right block is inverse
   return A.map(row=>row.slice(n));
 }
 
-/** Build Clean series from raw (for plots & export). */
-function buildCleanFromRaw(rawArr){
-  if(!rawArr || !rawArr.length) return [];
-  const out = rawArr.slice();
-  if(out.length>=2 && out[0]===0 && Number.isFinite(out[1]) && out[1]>0) out[0]=out[1]; // first ≠ 0
-  const sm = sgSmooth(out, 7, 3);
-  return sm;
-}
-
-/** Export JSON */
-function enforceLastZero(arr){ if(!arr||!arr.length) return arr; const out=arr.slice(); out[out.length-1]=0; return out; }
-
-function buildJson(mode){
-  const isAnchored = (mode === 'smoothing');
-  const isRaw = (mode === 'raw');
-  const isClean = (mode === 'clean');
-  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1", exportMode: isAnchored ? "anchored" : (isRaw ? "raw" : "clean") };
-
-  for (const w of wells){
-    const c = computeWellSeriesPhysical(w);
-    if (!c) continue;
-
-    payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
-
-    const baseOrder = [
-      ["OIL_PRODUCTION_CUML","Oil production cumulative", c.OIL_PRODUCTION_CUML, "STB", "Liquid_Production_Volume"],
-      ["GAS_OIL_RATIO","Gas oil ratio", c.GAS_OIL_RATIO, "MSCF/STB", "Gas_To_Liquid_Ratio"],
-      ["WATER_CUT","Water cut", c.WATER_CUT, "STB/STB", "Liquid_To_Liquid_Ratio"]
-    ];
-    for (const [key, desc, arr, unit, mid] of baseOrder){
-      payload.series.push({ description: desc, displayUnit: unit, entityName: c.name, entityType: "WELL", measurementID: mid, name: key, values: arr.slice() });
-    }
-
-    if (isAnchored){
-      const INT_pp = enforceLastZero(c.INTERCEPT_A);
-      const PI_pp  = enforceLastZero(c.PI_A);
-      payload.series.push({
-        description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
-        displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
-        entityName: c.name, entityType:"WELL",
-        measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID,
-        name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH",
-        values: INT_pp.slice()
-      });
-      payload.series.push({
-        description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description,
-        displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
-        entityName: c.name, entityType:"WELL",
-        measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID,
-        name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH",
-        values: PI_pp.slice()
-      });
-    } else if (isRaw){
-      // Raw export: first ≠ 0, last = 0
-      const INT_raw = sanitizeArray(c.__plot?.InterceptDarcy || []);
-      const PI_raw  = sanitizeArray(c.__plot?.PI || []);
-      if (INT_raw.length>=2 && INT_raw[0]===0 && Number.isFinite(INT_raw[1]) && INT_raw[1]>0) INT_raw[0]=INT_raw[1];
-      if (PI_raw.length>=2  && PI_raw[0] ===0 && Number.isFinite(PI_raw[1])  && PI_raw[1] >0)  PI_raw[0] =PI_raw[1];
-      if (INT_raw.length>=1) INT_raw[INT_raw.length-1]=0;
-      if (PI_raw.length>=1)  PI_raw[PI_raw.length-1] =0;
-
-      payload.series.push({
-        description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
-        displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
-        entityName: c.name, entityType:"WELL",
-        measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID,
-        name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH",
-        values: INT_raw.slice()
-      });
-      payload.series.push({
-        description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description,
-        displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
-        entityName: c.name, entityType:"WELL",
-        measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID,
-        name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH",
-        values: PI_raw.slice()
-      });
-    } else if (isClean){
-      // Clean export: Raw rules + smoothing, then force last = 0
-      let INT_base = sanitizeArray(c.__plot?.InterceptDarcy || []);
-      let PI_base  = sanitizeArray(c.__plot?.PI || []);
-      if (INT_base.length>=2 && INT_base[0]===0 && Number.isFinite(INT_base[1]) && INT_base[1]>0) INT_base[0]=INT_base[1];
-      if (PI_base.length>=2  && PI_base[0] ===0 && Number.isFinite(PI_base[1])  && PI_base[1] >0)  PI_base[0] =PI_base[1];
-
-      let INT_clean = sgSmooth(INT_base, 7, 3);
-      let PI_clean  = sgSmooth(PI_base , 7, 3);
-
-      if (INT_clean.length>=1) INT_clean[INT_clean.length-1]=0;
-      if (PI_clean.length>=1)  PI_clean[PI_clean.length-1] =0;
-
-      payload.series.push({
-        description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description,
-        displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
-        entityName: c.name, entityType:"WELL",
-        measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID,
-        name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH",
-        values: INT_clean.slice()
-      });
-      payload.series.push({
-        description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description,
-        displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit,
-        entityName: c.name, entityType:"WELL",
-        measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID,
-        name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH",
-        values: PI_clean.slice()
-      });
-    }
-  }
-  return payload;
-}
-
-/** Plotting */
+/** ===== Plotting ===== */
 function clearSVG(svg){ while (svg.firstChild) svg.removeChild(svg.firstChild); }
 function makeSVG(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
@@ -745,9 +747,11 @@ function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
   const yMax = (yMaxRaw<=0?1:yMaxRaw*1.1);
   const xMap = x => margin.left + (xMax===xMin?0:((x-xMin)/(xMax-xMin)))*W;
   const yMap = y => margin.top + H - (yMax===yMin?0:((y-yMin)/(yMax-yMin)))*H;
+
   const axes = makeSVG('g');
   const xAxis = makeSVG('line'); xAxis.setAttribute('x1', margin.left); xAxis.setAttribute('y1', margin.top+H); xAxis.setAttribute('x2', margin.left+W); xAxis.setAttribute('y2', margin.top+H); xAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(xAxis);
   const yAxis = makeSVG('line'); yAxis.setAttribute('x1', margin.left); yAxis.setAttribute('y1', margin.top); yAxis.setAttribute('x2', margin.left); yAxis.setAttribute('y2', margin.top+H); yAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(yAxis);
+
   const xticks=5, yticks=5;
   for (let i=0;i<=xticks;i++){
     const v = xMin + (i/xticks)*(xMax-xMin);
@@ -765,6 +769,7 @@ function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
   const xlab = makeSVG('text'); xlab.setAttribute('x', margin.left+W/2); xlab.setAttribute('y', margin.top+H+32); xlab.setAttribute('text-anchor','middle'); xlab.setAttribute('font-size','12'); xlab.setAttribute('fill','#cbd5e1'); xlab.textContent = xLabel; axes.appendChild(xlab);
   const ylab = makeSVG('text'); ylab.setAttribute('x', 12); ylab.setAttribute('y', margin.top+H/2); ylab.setAttribute('transform', `rotate(-90 12 ${margin.top+H/2})`); ylab.setAttribute('text-anchor','middle'); ylab.setAttribute('font-size','12'); ylab.setAttribute('fill','#cbd5e1'); ylab.textContent = yLabel; axes.appendChild(ylab);
   svg.appendChild(axes);
+
   for (const s of seriesList){
     if (!s.pts.length) continue;
     const d = s.pts.map((p,i)=>`${i?'L':'M'} ${xMap(p[0])} ${yMap(p[1])}`).join(' ');
@@ -775,50 +780,8 @@ function renderLineMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
     svg.appendChild(path);
   }
 }
-function renderScatterMulti(svg, seriesList, {xLabel, yLabel, emptyEl}){
-  clearSVG(svg);
-  const allPts = seriesList.flatMap(s=>s.pts);
-  if (!allPts.length || allPts.length < 2) { if (emptyEl) emptyEl.style.display='block'; return; }
-  if (emptyEl) emptyEl.style.display='none';
-  const wBox = svg.viewBox.baseVal.width || 900, hBox = svg.viewBox.baseVal.height || 300;
-  const margin = {left:70, right:16, top:16, bottom:42};
-  const W = wBox - margin.left - margin.right;
-  const H = hBox - margin.top - margin.bottom;
-  const xMin = 0, xMax = Math.max(...allPts.map(p=>p[0])) || 1;
-  const yMin = 0, yMax = Math.max(...allPts.map(p=>p[1])) || 1;
-  const xMap = x => margin.left + (xMax===xMin?0:((x-xMin)/(xMax-xMin)))*W;
-  const yMap = y => margin.top + H - (yMax===yMin?0:((y-yMin)/(yMax-yMin)))*H;
-  const axes = makeSVG('g');
-  const xAxis = makeSVG('line'); xAxis.setAttribute('x1',margin.left); xAxis.setAttribute('y1',margin.top+H); xAxis.setAttribute('x2',margin.left+W); xAxis.setAttribute('y2',margin.top+H); xAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(xAxis);
-  const yAxis = makeSVG('line'); yAxis.setAttribute('x1',margin.left); yAxis.setAttribute('y1',margin.top); yAxis.setAttribute('x2',margin.left); yAxis.setAttribute('y2',margin.top+H); yAxis.setAttribute('stroke', '#2f3b52'); axes.appendChild(yAxis);
-  const xticks=5, yticks=5;
-  for (let i=0;i<=xticks;i++){
-    const v = xMin + (i/xticks)*(xMax-xMin);
-    const x = xMap(v);
-    const t = makeSVG('line'); t.setAttribute('x1',x); t.setAttribute('y1',margin.top+H); t.setAttribute('x2',x); t.setAttribute('y2',margin.top+H+6); t.setAttribute('stroke','#2f3b52'); axes.appendChild(t);
-    const lbl = makeSVG('text'); lbl.setAttribute('x',x); lbl.setAttribute('y',margin.top+H+24); lbl.setAttribute('text-anchor','middle'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','#94a3b8'); lbl.textContent = Math.round(v).toString(); axes.appendChild(lbl);
-  }
-  for (let i=0;i<=yticks;i++){
-    const v = yMin + (i/yticks)*(yMax-yMin);
-    const y = yMap(v);
-    const t = makeSVG('line'); t.setAttribute('x1',margin.left-6); t.setAttribute('y1',y); t.setAttribute('x2',margin.left); t.setAttribute('y2',y); t.setAttribute('stroke','#2f3b52'); axes.appendChild(t);
-    const g = makeSVG('line'); g.setAttribute('x1',margin.left); g.setAttribute('y1',y); g.setAttribute('x2',margin.left+W); g.setAttribute('y2',y); g.setAttribute('stroke','#1f2937'); axes.appendChild(g);
-    const lbl = makeSVG('text'); lbl.setAttribute('x',margin.left-8); lbl.setAttribute('y',y+4); lbl.setAttribute('text-anchor','end'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','#94a3b8'); lbl.textContent = (Math.round(v*1000)/1000).toString(); axes.appendChild(lbl);
-  }
-  const xlab = makeSVG('text'); xlab.setAttribute('x', margin.left+W/2); xlab.setAttribute('y', margin.top+H+36); xlab.setAttribute('text-anchor','middle'); xlab.setAttribute('font-size','12'); xlab.setAttribute('fill','#cbd5e1'); xlab.textContent = xLabel; axes.appendChild(xlab);
-  const ylab = makeSVG('text'); ylab.setAttribute('x', 14); ylab.setAttribute('y', margin.top+H/2); ylab.setAttribute('transform', `rotate(-90 14 ${margin.top+H/2})`); ylab.setAttribute('text-anchor','middle'); ylab.setAttribute('font-size','12'); ylab.setAttribute('fill','#cbd5e1'); ylab.textContent = yLabel; axes.appendChild(ylab);
-  svg.appendChild(axes);
-  for (const s of seriesList){
-    for (const [xv,yv] of s.pts){
-      if (!Number.isFinite(xv) || !Number.isFinite(yv)) continue;
-      const c = makeSVG('circle');
-      c.setAttribute('cx', xMap(xv)); c.setAttribute('cy', yMap(yv)); c.setAttribute('r', 3.2); c.setAttribute('fill', s.color || '#3b82f6');
-      svg.appendChild(c);
-    }
-  }
-}
 
-/** Diagnostics */
+/** ===== Diagnostics ===== */
 function buildDiagnostics(plot){
   const msgs = [];
   const tolRel = 0.05;
@@ -844,7 +807,7 @@ function buildDiagnostics(plot){
   return msgs;
 }
 
-/** Render */
+/** ===== Render all plots & diag ===== */
 function renderAllPlotsAndDiag(){
   const w = wells.find(x=>x.id===activeWellId);
   clearSVG(svgIntercept); clearSVG(svgPI); clearSVG(svgPIvsInt);
@@ -853,30 +816,30 @@ function renderAllPlotsAndDiag(){
   const comp = computeWellSeriesPhysical(w);
   if (!comp || !comp.__plot) {
     emptyIntercept.style.display='block'; emptyPI.style.display='block'; emptyPIvsInt.style.display='block';
-    diagBox.innerHTML = `<span class="ok">No issues yet.</span>`; return;
+    if (diagBox) diagBox.innerHTML = `<span class="ok">No issues yet.</span>`;
+    return;
   }
 
-  // Raw arrays
+  // Raw series
   const X = comp.__plot.CumOil || [];
   const rawInt = sanitizeArray(comp.__plot.InterceptDarcy || []);
   const rawPI  = sanitizeArray(comp.__plot.PI || []);
   const fitInt = comp.__plot.InterceptA || [];
   const fitPI  = comp.__plot.PIA || [];
 
-  // Apply "first ≠ 0" to raw for display (not last=0)
+  // Display rules (first non-zero only)
   const dispInt = rawInt.slice();
   const dispPI  = rawPI.slice();
   if (dispInt.length>=2 && dispInt[0]===0 && Number.isFinite(dispInt[1]) && dispInt[1]>0) dispInt[0]=dispInt[1];
-  if (dispPI.length >=2 && dispPI[0] ===0 && Number.isFinite(dispPI[1])  && dispPI[1] >0) dispPI[0] =dispPI[1];
+  if (dispPI.length >=2 && dispPI[0] ===0 && Number.isFinite(dispPI[1])  && dispPI[1] >0)  dispPI[0] =dispPI[1];
 
-  // Clean display: first-fix + smoothing
+  // Smooth display from raw
   const cleanInt = buildCleanFromRaw(rawInt);
   const cleanPI  = buildCleanFromRaw(rawPI);
 
   // Build points
   const ptsIntRaw=[], ptsIntFit=[], ptsIntClean=[];
   const ptsPIRaw=[],  ptsPIFit=[],  ptsPIClean=[];
-  const ptsScatterRaw=[], ptsScatterFit=[], ptsScatterClean=[];
   for(let i=0;i<X.length;i++){
     const x=X[i];
     const rI=dispInt[i], fI=fitInt[i], cI=cleanInt[i];
@@ -884,46 +847,41 @@ function renderAllPlotsAndDiag(){
     if (Number.isFinite(x) && Number.isFinite(rI)) ptsIntRaw.push([x,rI]);
     if (Number.isFinite(x) && Number.isFinite(fI)) ptsIntFit.push([x,fI]);
     if (Number.isFinite(x) && Number.isFinite(cI)) ptsIntClean.push([x,cI]);
-
     if (Number.isFinite(x) && Number.isFinite(rP)) ptsPIRaw.push([x,rP]);
     if (Number.isFinite(x) && Number.isFinite(fP)) ptsPIFit.push([x,fP]);
     if (Number.isFinite(x) && Number.isFinite(cP)) ptsPIClean.push([x,cP]);
-
-    if (Number.isFinite(rI) && Number.isFinite(rP)) ptsScatterRaw.push([rI,rP]);
-    if (Number.isFinite(fI) && Number.isFinite(fP)) ptsScatterFit.push([fI,fP]);
-    if (Number.isFinite(cI) && Number.isFinite(cP)) ptsScatterClean.push([cI,cP]);
   }
 
   renderLineMulti(svgIntercept, [
     { pts: ptsIntRaw,   color: '#3b82f6' },
-    { pts: ptsIntFit,   color: '#eab308' },
-    { pts: ptsIntClean, color: '#10b981' }
+    { pts: ptsIntClean, color: '#10b981' },
+    { pts: ptsIntFit,   color: '#eab308' }
   ], {xLabel:'Cumulative Oil (STB)', yLabel:'Intercept (STB/day)', emptyEl: emptyIntercept});
 
   renderLineMulti(svgPI, [
     { pts: ptsPIRaw,   color: '#3b82f6' },
-    { pts: ptsPIFit,   color: '#eab308' },
-    { pts: ptsPIClean, color: '#10b981' }
+    { pts: ptsPIClean, color: '#10b981' },
+    { pts: ptsPIFit,   color: '#eab308' }
   ], {xLabel:'Cumulative Oil (STB)', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPI});
 
-  renderScatterMulti(svgPIvsInt, [
-    { pts: ptsScatterRaw,   color: '#3b82f6' },
-    { pts: ptsScatterFit,   color: '#eab308' },
-    { pts: ptsScatterClean, color: '#10b981' }
-  ], {xLabel:'Intercept (STB/day)', yLabel:'IPR (STB/(day.psi))', emptyEl: emptyPIvsInt});
+  // Scatter is permanently hidden; we still compute for completeness but it's not shown.
+  emptyPIvsInt.style.display='block';
 
   const diags = buildDiagnostics({Days:comp.__plot.Days, InterceptDarcy:dispInt, PI:dispPI, BP_psi:comp.__plot.BP_psi, BHP_psi:comp.__plot.BHP_psi, q_stbd:comp.__plot.q_stbd});
-  if (!diags.length){
-    diagBox.innerHTML = `<span class="ok">All checks passed.</span>`;
-  } else {
-    const items = diags.slice(0, 30).map(m=>`<li>${m}</li>`).join('');
-    diagBox.innerHTML = `<div class="bad"><b>${diags.length}</b> issue(s) detected:</div><ul>${items}</ul>`;
+  if (diagBox){
+    if (!diags.length) diagBox.innerHTML = `<span class="ok">All checks passed.</span>`;
+    else {
+      const items = diags.slice(0, 30).map(m=>`<li>${m}</li>`).join('');
+      diagBox.innerHTML = `<div class="bad"><b>${diags.length}</b> issue(s) detected:</div><ul>${items}</ul>`;
+    }
   }
 }
 
-/** Units wiring */
-function renderUnits(){ const w=wells.find(x=>x.id===activeWellId); if(!w) return;
-  u_time.value=w.units.time; u_bp.value=w.units.bp; u_bhp.value=w.units.bhp; u_oil.value=w.units.oil; u_gas.value=w.units.gas; u_wat.value=w.units.wat; }
+/** ===== Units wiring ===== */
+function renderUnits(){
+  const w=wells.find(x=>x.id===activeWellId); if(!w) return;
+  u_time.value=w.units.time; u_bp.value=w.units.bp; u_bhp.value=w.units.bhp; u_oil.value=w.units.oil; u_gas.value=w.units.gas; u_wat.value=w.units.wat;
+}
 u_time.onchange=()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.time=u_time.value; safeRenderAll(); } };
 u_bp.onchange  =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.bp=u_bp.value; safeRenderAll(); } };
 u_bhp.onchange =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.bhp=u_bhp.value; safeRenderAll(); } };
@@ -931,57 +889,115 @@ u_oil.onchange =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units
 u_gas.onchange =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.gas=u_gas.value; safeRenderAll(); } };
 u_wat.onchange =()=>{ const w=wells.find(x=>x.id===activeWellId); if(w){ w.units.wat=u_wat.value; safeRenderAll(); } };
 
-/** Download helper */
-function downloadFile(filename, obj){
-  try{
-    const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  }catch(err){
-    alert("Download failed: "+err);
+/** ===== Export JSON ===== */
+function enforceLastZero(arr){ if(!arr||!arr.length) return arr; const out=arr.slice(); out[out.length-1]=0; return out; }
+function buildJson(mode){
+  const isFit    = (mode === 'fit');
+  const isRaw    = (mode === 'raw');
+  const isSmooth = (mode === 'smooth');
+
+  const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1",
+    exportMode: isFit ? "fit" : (isRaw ? "raw" : "smooth")
+  };
+
+  for (const w of wells){
+    const c = computeWellSeriesPhysical(w);
+    if (!c) continue;
+
+    payload.step[c.name] = Array.from({length:c.length}, (_,i)=>i);
+
+    const baseOrder = [
+      ["OIL_PRODUCTION_CUML","Oil production cumulative", c.OIL_PRODUCTION_CUML, "STB", "Liquid_Production_Volume"],
+      ["GAS_OIL_RATIO","Gas oil ratio", c.GAS_OIL_RATIO, "MSCF/STB", "Gas_To_Liquid_Ratio"],
+      ["WATER_CUT","Water cut", c.WATER_CUT, "STB/STB", "Liquid_To_Liquid_Ratio"]
+    ];
+    for (const [key, desc, arr, unit, mid] of baseOrder){
+      payload.series.push({ description: desc, displayUnit: unit, entityName: c.name, entityType: "WELL", measurementID: mid, name: key, values: arr.slice() });
+    }
+
+    if (isFit){
+      const INT_pp = enforceLastZero(c.INTERCEPT_A);
+      const PI_pp  = enforceLastZero(c.PI_A);
+      payload.series.push({ description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", values: INT_pp.slice() });
+      payload.series.push({ description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", values: PI_pp.slice() });
+    } else if (isRaw){
+      const INT_raw = sanitizeArray(c.__plot?.InterceptDarcy || []);
+      const PI_raw  = sanitizeArray(c.__plot?.PI || []);
+      if (INT_raw.length>=2 && INT_raw[0]===0 && Number.isFinite(INT_raw[1]) && INT_raw[1]>0) INT_raw[0]=INT_raw[1];
+      if (PI_raw.length >=2 && PI_raw[0] ===0 && Number.isFinite(PI_raw[1])  && PI_raw[1] >0)  PI_raw[0] =PI_raw[1];
+      if (INT_raw.length>=1) INT_raw[INT_raw.length-1]=0;
+      if (PI_raw.length >=1) PI_raw[PI_raw.length-1]=0;
+
+      payload.series.push({ description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", values: INT_raw.slice() });
+      payload.series.push({ description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", values: PI_raw.slice() });
+    } else if (isSmooth){
+      let INT_base = sanitizeArray(c.__plot?.InterceptDarcy || []);
+      let PI_base  = sanitizeArray(c.__plot?.PI || []);
+      if (INT_base.length>=2 && INT_base[0]===0 && Number.isFinite(INT_base[1]) && INT_base[1]>0) INT_base[0]=INT_base[1];
+      if (PI_base.length >=2 && PI_base[0] ===0 && Number.isFinite(PI_base[1])  && PI_base[1] >0)  PI_base[0] =PI_base[1];
+
+      let INT_clean = sgSmooth(INT_base, 7, 3);
+      let PI_clean  = sgSmooth(PI_base , 7, 3);
+      if (INT_clean.length>=1) INT_clean[INT_clean.length-1]=0;
+      if (PI_clean.length >=1) PI_clean[PI_clean.length-1]=0;
+
+      payload.series.push({ description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", values: INT_clean.slice() });
+      payload.series.push({ description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", values: PI_clean.slice() });
+    }
   }
+  return payload;
 }
 
-/** Mode UI */
+/** ===== Mode/UI wiring ===== */
 function updateModeUI(){
   Array.from(modeTabsEl.querySelectorAll('.mtab')).forEach(el=>{
     el.classList.toggle('active', el.dataset.mode === appMode);
   });
-  const label = appMode==='smoothing' ? 'Download JSON (Anchored)' : (appMode==='raw' ? 'Download JSON (Raw)' : 'Download JSON (Clean)');
+  const label = appMode==='raw'   ? 'Download JSON (Raw)'
+              : appMode==='smooth'? 'Download JSON (Smooth)'
+              :                     'Download JSON (Fit)';
   downloadBtn.textContent = label;
 }
 modeTabsEl.addEventListener('click', (e)=>{
   const t = e.target.closest('.mtab');
   if(!t) return;
   const mode = t.dataset.mode;
-  if (mode && (mode === 'smoothing' || mode === 'raw' || mode==='clean')){
+  if (mode && (mode === 'raw' || mode === 'smooth' || mode === 'fit')){
     appMode = mode;
     updateModeUI();
   }
 });
 
-/** QC toggle */
+/** ===== QC toggle ===== */
 function applyQcVisibility(){
   document.querySelectorAll('.qc-plot').forEach(el => el.classList.toggle('hidden', !qcVisible));
   qcToggleBtn.style.opacity = qcVisible ? '1' : '0.6';
 }
 qcToggleBtn.onclick = () => { qcVisible = !qcVisible; applyQcVisibility(); };
 
-/** UI actions */
+/** ===== Download helper ===== */
+function downloadFile(filename, obj){
+  try{
+    const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }catch(err){ alert("Download failed: "+err); }
+}
+
+/** ===== Buttons ===== */
 addWellBtn.onclick = () => addWell();
-downloadBtn.onclick = () => {
-  const data = buildJson(appMode);
-  const fname = appMode === 'smoothing' ? 'ipr_decline_curves_anchored.json'
-              : appMode === 'raw'       ? 'ipr_decline_curves_raw.json'
-              :                           'ipr_decline_curves_clean.json';
-  downloadFile(fname, data);
-};
+downloadBtn.onclick = () => { const data = buildJson(appMode); downloadFile('ipr_decline_curves.json', data); };
 deleteWellBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; deleteWellWithMaybeConfirm(w.id); };
 deleteAllBtn.onclick = () => { if (confirm("Delete all wells and reset to P1?")) resetAllWells(); };
-clearDataBtn.onclick = () => { const w=wells.find(x=>x.id===activeWellId); if (!w) return; if (!confirm(`Clear all rows for well "${w.name}"?`)) return; w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill('')); renderTable(); safeRenderAll(); };
-duplicateBtn.onclick = () => { 
-  const n = Number(copyCountInput.value); 
+clearDataBtn.onclick = () => {
+  const w=wells.find(x=>x.id===activeWellId); if (!w) return;
+  if (!confirm(`Clear all rows for well "${w.name}"?`)) return;
+  w.tableData = Array.from({length:30},()=>Array(WELL_COLS.length).fill(''));
+  renderTable(); safeRenderAll();
+};
+duplicateBtn.onclick = () => {
+  const n = Number(copyCountInput.value);
   const count = Math.max(1, Math.floor(Number.isFinite(n)?n:1));
   const src = wells.find(x=>x.id===activeWellId);
   if(!src) return;
@@ -993,24 +1009,24 @@ duplicateBtn.onclick = () => {
   renderTabs(); safeRenderAll();
 };
 
-/** Safe render + errors */
+/** ===== Safe render & boot ===== */
 function safeRenderAll(){
   try { renderAllPlotsAndDiag(); }
   catch (err){
     const msg = (err && err.stack) ? err.stack : String(err);
-    diagBox.innerHTML = `<div class="bad"><b>Runtime error:</b><pre style="white-space:pre-wrap">${msg}</pre></div>`;
+    if (diagBox) diagBox.innerHTML = `<div class="bad"><b>Runtime error:</b><pre style="white-space:pre-wrap">${msg}</pre></div>`;
     console.error(err);
   }
 }
 window.onerror = function(message, source, lineno, colno, error){
   const detail = (error && error.stack) ? error.stack : `${message} at ${source}:${lineno}:${colno}`;
-  diagBox.innerHTML = `<div class="bad"><b>Runtime error:</b><pre style="white-space:pre-wrap">${detail}</pre></div>`;
+  if (diagBox) diagBox.innerHTML = `<div class="bad"><b>Runtime error:</b><pre style="white-space:pre-wrap">${detail}</pre></div>`;
 };
 
-/** Boot */
+// Boot: mode label → create first well/table → keep QC hidden
 updateModeUI();
 addWell('P1');
-applyQcVisibility(); // plots/legend/diagnostics start hidden
+applyQcVisibility();
 </script>
 </body>
 </html>
