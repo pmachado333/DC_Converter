@@ -596,8 +596,8 @@ function computeWellSeriesPhysical(well){
   const BP_psi = BP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);
   const BHP_psi = BHP_kPa.map(v=>Number.isFinite(v)? v/PSI_TO_KPA : NaN);
 
-  const GOR = oil_stb.map((o,i)=> (Number.isFinite(o) && o>0) ? gas_mmscf[i]/o : NaN);
-  const WATER_FRAC = oil_stb.map((o,i)=>{ const w = wat_stb[i]; const denom = (Number.isFinite(o)?o:0) + (Number.isFinite(w)?w:0); return denom > 0 ? (w/denom) : NaN; });
+  const GOR = oil_stb.map((o,i)=> (Number.isFinite(o) && o>0) ? (gas_mmscf[i]/o) * 1000 : NaN);
+const WATER_FRAC = oil_stb.map((o,i)=>{ const w = wat_stb[i]; const denom = (Number.isFinite(o)?o:0) + (Number.isFinite(w)?w:0); return denom > 0 ? (w/denom) : NaN; });
 
   // cumulative oil (simple rectangle integration by day deltas)
   const dDays = Days.map(v=>Number.isFinite(v)?v:0);
