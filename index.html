@@ -69,6 +69,12 @@
     <button class="btn danger" id="deleteAllBtn">Delete All Wells</button>
     <span class="hint">Tip: paste from Excel; rows auto-expand.</span>
 
+    <!-- New checkbox: default checked -->
+    <label for="zeroEndCheckbox" class="hint" style="display:flex;align-items:center;gap:6px;">
+      <input type="checkbox" id="zeroEndCheckbox" checked />
+      Zero flowrate at the end of life
+    </label>
+
     <div class="spacer"></div>
 
     <!-- QC toggle (plots hidden on boot) -->
@@ -274,6 +280,7 @@ const emptyIntercept = document.getElementById('emptyIntercept');
 const emptyPI        = document.getElementById('emptyPI');
 const emptyPIvsInt   = document.getElementById('emptyPIvsInt'); // exists but always hidden
 const diagBox = document.getElementById('diagBox');
+const zeroEndCheckbox = document.getElementById('zeroEndCheckbox'); // new checkbox
 
 /** ===== Utils ===== */
 const uuid = () => Math.random().toString(36).slice(2,9);
@@ -895,6 +902,7 @@ function buildJson(mode){
   const isFit    = (mode === 'fit');
   const isRaw    = (mode === 'raw');
   const isSmooth = (mode === 'smooth');
+  const forceZeroEnd = zeroEndCheckbox ? zeroEndCheckbox.checked : true; // checkbox drives end-of-life behavior
 
   const payload = { name:"IPR Decline Curves", series:[], step:{}, unitSystem:"ECLIPSE_FIELD", version:"v1",
     exportMode: isFit ? "fit" : (isRaw ? "raw" : "smooth")
@@ -916,8 +924,8 @@ function buildJson(mode){
     }
 
     if (isFit){
-      const INT_pp = enforceLastZero(c.INTERCEPT_A);
-      const PI_pp  = enforceLastZero(c.PI_A);
+      const INT_pp = forceZeroEnd ? enforceLastZero(c.INTERCEPT_A) : c.INTERCEPT_A.slice();
+      const PI_pp  = forceZeroEnd ? enforceLastZero(c.PI_A)        : c.PI_A.slice();
       payload.series.push({ description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", values: INT_pp.slice() });
       payload.series.push({ description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", values: PI_pp.slice() });
     } else if (isRaw){
@@ -925,9 +933,10 @@ function buildJson(mode){
       const PI_raw  = sanitizeArray(c.__plot?.PI || []);
       if (INT_raw.length>=2 && INT_raw[0]===0 && Number.isFinite(INT_raw[1]) && INT_raw[1]>0) INT_raw[0]=INT_raw[1];
       if (PI_raw.length >=2 && PI_raw[0] ===0 && Number.isFinite(PI_raw[1])  && PI_raw[1] >0)  PI_raw[0] =PI_raw[1];
-      if (INT_raw.length>=1) INT_raw[INT_raw.length-1]=0;
-      if (PI_raw.length >=1) PI_raw[PI_raw.length-1]=0;
-
+      if (forceZeroEnd){
+        if (INT_raw.length>=1) INT_raw[INT_raw.length-1]=0;
+        if (PI_raw.length >=1) PI_raw[PI_raw.length-1]=0;
+      }
       payload.series.push({ description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", values: INT_raw.slice() });
       payload.series.push({ description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", values: PI_raw.slice() });
     } else if (isSmooth){
@@ -935,12 +944,12 @@ function buildJson(mode){
       let PI_base  = sanitizeArray(c.__plot?.PI || []);
       if (INT_base.length>=2 && INT_base[0]===0 && Number.isFinite(INT_base[1]) && INT_base[1]>0) INT_base[0]=INT_base[1];
       if (PI_base.length >=2 && PI_base[0] ===0 && Number.isFinite(PI_base[1])  && PI_base[1] >0)  PI_base[0] =PI_base[1];
-
       let INT_clean = sgSmooth(INT_base, 7, 3);
       let PI_clean  = sgSmooth(PI_base , 7, 3);
-      if (INT_clean.length>=1) INT_clean[INT_clean.length-1]=0;
-      if (PI_clean.length >=1) PI_clean[PI_clean.length-1]=0;
-
+      if (forceZeroEnd){
+        if (INT_clean.length>=1) INT_clean[INT_clean.length-1]=0;
+        if (PI_clean.length >=1) PI_clean[PI_clean.length-1]=0;
+      }
       payload.series.push({ description: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.INTERCEPT_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "INTERCEPT_OIL_PHASE_IPR_REF_DEPTH", values: INT_clean.slice() });
       payload.series.push({ description: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.description, displayUnit: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.displayUnit, entityName: c.name, entityType:"WELL", measurementID: SERIES_META.SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH.measurementID, name: "SCALING_FACTOR_OIL_PHASE_IPR_REF_DEPTH", values: PI_clean.slice() });
     }
